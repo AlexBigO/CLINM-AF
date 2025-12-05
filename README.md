@@ -1,7 +1,8 @@
 # <font color="darkmagenta">**CLINM Analysis Framework (CLINM-AF)**</font>
 
-
-A set of python modules and scripts to analyse experimental data from CLINM.
+A set of python modules and scripts to:
+- analyse experimental data from CLINM measurements
+- produce simulated data (only GATE10 for the moment)
 
 # <font color="blue">**Choices**</font>
 
@@ -10,34 +11,51 @@ We decide to work with the following environment:
 - the scripts shall remain generic and work with YAML configuration files as input
 - we develop utils that will be put in the dedicated folder to get lighter "main scripts"
 
+
 # <font color="blue">**Architecture**</font>
 
-- IDEA: reformat all the input data so that each config (each data taking) gets associated to a repository
+*IDEA*: reformat all the input data so that each config (each data taking) gets associated to a repository
 
-- Utils
-- Fitting tool
+- `Utils`: a directory with some utilities used in several scripts across the framework
+- `DataImport`: a directory with the necessary tools to retrieve data from remote server
+- `Fitter`: (not implemented yet) a directory with the tools used to fit energy distributions
 
 
-# <font color="blue">**Data production via STIVI/SHOE**</font>
+# <font color="blue">**Data production via STIVI [WORK IN PROGRESS]**</font>
 
-We generate raw data reconstruction via STIVI/SHOE with flatTree option enabled:
+We generate raw data reconstruction via STIVI with flatTree option enabled:
 
 <put Christian's script>
 
-# <font color="blue">**Import data from sbgui11 server**</font>
+# <font color="blue">**Import data from remote server**</font>
 
-We retrieve these data (**that underwent STIVI reconstruction with flatTree option enabled!**) from `sbgui11` located in `/work/desis/STIVI/dataWC/CNAO/spt2025/rootfiles`:
+We want to retrieve data from a server (e.g. `sbgui11`). These data can either be:
+- data that already that underwent STIVI reconstruction (with flatTree option enabled!)
+- data from the Wave Catcher (so `.bin` files) that would then require some STIVI treatment
 
+To import data, do:
 ```
 cd DataImport
 python3 import_data_from_server.py config_import_data.yml
 ```
 
-*Note*: The file(s) or directory than should be copied from remote to local disc can be specified in the config file.
+*Notes*:
+- One can decide to print the copy and rename command lines, or run them directly
+- The file(s) or directory than should be copied from remote to local disc need to be specified in the config file
+- One can copy:
+    - a single file
+    - a list of files
+    - a single directory
+    - a list of directories
+
+    and rename them if desired
+
+- It is also possible to create a SSH Control Master and add it directly to the `~/.ssh/` config file
+
 
 *Caveat*: this script only works when already connected to IPHC server.
 
-# <font color="blue">**Handle data from STIVI/SHOE output**</font>
+# <font color="blue">**Handle data from STIVI output**</font>
 
 For each `.root` file we want to analyse:
 - we compute kinetic energies before Plastic 1 and before Plastic 2, and store them in new branches;
@@ -55,7 +73,7 @@ This script produces a directory (one for each input file, i.e. one per Run) wit
 
 *Note*: it was chosen to work with a directory per Run because of the many files that might be produced during the next steps of the analysis.
 
-# <font color="blue">**Calibration of the detectors**</font>
+# <font color="blue">**Calibration of the detectors [WORK IN PROGRESS]**</font>
 
 Three scintillation detectors are used in this set:
 - a "thin" plastic (2 mm)
@@ -73,7 +91,7 @@ One needs to perform this calibration in two steps.
 We use Gate to perform this simulation
 
 
-# <font color="blue">**Fitting tool**</font>
+# <font color="blue">**Fitting tool [WORK IN PROGRESS]**</font>
 
 *Note*: We decide to use a ROOT-based approach as ROOT is more well known by the team members (than some *flarefly* package for instance). Besides, this is a versatile option as one could work with ROOT or pyROOT, making it "internship-compatible".
 

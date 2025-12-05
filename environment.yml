@@ -1,0 +1,12 @@
+name: clinmaf_env
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.8
+  - pyyaml
+  - pandas
+  - numpy
+  - matplotlib
+  - pip
+  - pip:
+    - argparse

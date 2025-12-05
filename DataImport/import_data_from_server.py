@@ -26,7 +26,9 @@ try:
     sys.path.append("../Utils/")
     from utils import enforce_trailing_slash, Logger
 except ModuleNotFoundError:
-    print("Module 'utils' is not in the parent directory. Add it to run this script.")
+    print(
+        "Module 'utils' is not in the '../Utils/' directory. Add it to run this script."
+    )
 
 POSSIBLE_TYPE_OF_CONTENT: list[str] = ["directory", "file"]
 

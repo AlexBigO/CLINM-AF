@@ -1,6 +1,6 @@
 command:
-  print: False
-  run: True
+  print: True
+  run: False
 
 local:
   dir: # directory in which content will be copied
@@ -13,11 +13,11 @@ local:
   ]
 
 remote:
-  use_ssh_control_master: True  # if True, server needs to match the 'Host' (and not 'Hostname'!) in SSH Contro Master
+  use_ssh_control_master: True  # if True, server needs to match the 'Host' (and not 'Hostname'!) in SSH Control Master
   username: &username abigot
   server: ui11
   type_of_content: file  # possible values: directory, file
-  content: [ #/work/desis/STIVI/dataWC/CNAO/spt2025/Run_04_CNAO2025_Data_9_13_2025_Binary_config2_carbon120MeVu_PMMA_1/Run_04_CNAO2025_Data_9_13_2025_Binary_config2_carbon120MeVu_PMMA_1.bin
+  content: [
     /work/desis/STIVI/dataWC/CNAO/spt2025/rootfiles/Run_01_CNAO2025_Data_9_13_2025_Binary_config1_FlatTree.root,
     /work/desis/STIVI/dataWC/CNAO/spt2025/rootfiles/Run_02_CNAO2025_Data_9_13_2025_Binary_config1_FlatTree.root,
     /work/desis/STIVI/dataWC/CNAO/spt2025/rootfiles/Run_03_CNAO2025_Data_9_13_2025_Binary_config1_FlatTree.root

@@ -21,7 +21,6 @@ try:
 except ModuleNotFoundError:
     print("Module 'argparse' is not installed. Please install it to run this script.")
 
-
 try:
     sys.path.append("../Utils/")
     from utils import enforce_trailing_slash, Logger
@@ -103,7 +102,7 @@ def create_ssh_cm(cfg_ssh_cm: dict) -> None:
     )
 
 
-# pylint:disable=too-many-locals, too-many-branches
+# pylint:disable=too-many-locals, too-many-branches, too-many-statements
 def main(name_config_file: str) -> None:
     """
     Main function
@@ -204,6 +203,6 @@ def main(name_config_file: str) -> None:
 if __name__ == "__main__":
     parser = ArgumentParser(description="Arguments")
     parser.add_argument("name_config_file", metavar="text", default="config.yaml")
-    args: str = parser.parse_args()
+    args = parser.parse_args()
 
     main(args.name_config_file)

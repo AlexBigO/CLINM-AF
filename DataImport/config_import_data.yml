@@ -1,0 +1,32 @@
+command:
+  print: False
+  run: True
+
+local:
+  dir: # directory in which content will be copied
+    name: /Users/abigot/CLINM/Data/TestImportCfg
+    mkdir: False  # enforce (or not) creation of this dir
+  content_renaming: [  # null or new name(s) of content
+    Run_01.root,
+    Run_02.root,
+    Run_03.root
+  ]
+
+remote:
+  use_ssh_control_master: True  # if True, server needs to match the 'Host' (and not 'Hostname'!) in SSH Contro Master
+  username: &username abigot
+  server: ui11
+  type_of_content: file  # possible values: directory, file
+  content: [ #/work/desis/STIVI/dataWC/CNAO/spt2025/Run_04_CNAO2025_Data_9_13_2025_Binary_config2_carbon120MeVu_PMMA_1/Run_04_CNAO2025_Data_9_13_2025_Binary_config2_carbon120MeVu_PMMA_1.bin
+    /work/desis/STIVI/dataWC/CNAO/spt2025/rootfiles/Run_01_CNAO2025_Data_9_13_2025_Binary_config1_FlatTree.root,
+    /work/desis/STIVI/dataWC/CNAO/spt2025/rootfiles/Run_02_CNAO2025_Data_9_13_2025_Binary_config1_FlatTree.root,
+    /work/desis/STIVI/dataWC/CNAO/spt2025/rootfiles/Run_03_CNAO2025_Data_9_13_2025_Binary_config1_FlatTree.root
+  ]
+
+# configuration to create a SSH Control Master for this server
+ssh_control_master: 
+  create: False
+  ssh_config_file: /Users/abigot/.ssh/config
+  host: ui11
+  user: *username
+  hostname: sbgui11

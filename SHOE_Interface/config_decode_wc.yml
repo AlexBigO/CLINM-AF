@@ -1,0 +1,13 @@
+command:
+  print: True
+  run: False
+
+STIVI:
+  Reconstruction_dir: /Users/abigot/SHOE/main/Reconstruction
+
+DecodeWC:
+  input: [file1, file2]
+  output: auto # auto or file name
+  exp: CLINM2025
+  run: [4, 5]
+  flat: [True, False] # True or False

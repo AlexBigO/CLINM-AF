@@ -4,6 +4,29 @@ A set of python modules and scripts to:
 - analyse experimental data from CLINM measurements
 - produce simulated data (only GATE10 for the moment)
 
+
+# <font color="blue">**Installation**</font>
+
+## Download this Github repository
+
+You can use `git clone` command as follows:
+
+```
+git clone --branch main <github repo>
+```
+
+## Create a virtual environment
+
+One can use a `conda` environment:
+- create a new environement:
+```
+conda env create -f environment.yml
+```
+- update an existing environment (named `clinmaf_env`):
+```
+conda env update --name clinamf_env --file environment.yml --prune
+```
+
 # <font color="blue">**Choices**</font>
 
 We decide to work with the following environment:

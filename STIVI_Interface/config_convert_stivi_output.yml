@@ -1,0 +1,39 @@
+input:
+  file: [  # a single input file or a list of input files
+    /Users/abigot/CLINM/Data/CNAO/spt2025/rootfiles/Run_04_Data_9_13_2025_Binary_config2_carbon120MeVu_FlatTree.root,
+    /Users/abigot/CLINM/Data/CNAO/spt2025/rootfiles/Run_06_Data_9_13_2025_Binary_config2_carbon120MeVu_FlatTree.root,
+  ]
+  tree:
+    name: tree
+    DeltaE_branches: [
+      "pl0ntu.fPlAmplitude",  # Plastic 1
+      "pl1ntu.fPlAmplitude",  # Plastic 2
+      "ce0ntu.fCeAmplitude"   # CeBr
+    ]
+
+output:
+  dir: /Users/abigot/CLINM/Data/TestConvertSTIVI  # output directory (if sub_dir is not activated)
+  sub_dir:
+    activate: True  # take the file name for the sub dir name (overwrites option 'file' below)
+    name_file: rawData.root  # default name of a file in sub dir if sub_dir enabled
+  file: [  # # a single output file or a list of output files
+    testRawData_Run4.root,
+    testRawData_Run6.root
+  ]
+  tree:
+    name: tree
+    DeltaE_branches_renaming: [
+      "fDeltaEPl1",  # Plastic 1
+      "fDeltaEPl2",  # Plastic 2
+      "fDeltaECebr"  # CeBr
+    ]
+    ec_branches:  # new branches with kinetic energy
+      ec_pl1: fEcBeforePl1
+      ec_pl2: fEcBeforePl2
+  qa:
+    activate: True  # add QA plots to the output file
+    nbins: 512  # number of bins for QA histograms
+  save_nrj_info_only: true # switch to save only energy information
+
+RDataFrame:
+  EnableImplicitMT: 6

@@ -21,10 +21,10 @@ except ModuleNotFoundError:
 
 try:
     sys.path.append("../Utils/")
-    from utils import Logger
+    from logger import Logger
 except ModuleNotFoundError:
     print(
-        "Module 'utils' is not in the '../Utils/' directory. Add it to run this script."
+        "Module 'logger' is not in the '../Utils/' directory. Add it to run this script."
     )
 
 

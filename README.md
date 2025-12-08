@@ -101,9 +101,11 @@ where:
 - `read_from_stivi.py` is a generic python script that should not be modified;
 - `config_read_from_stivi.yml` is a configuration file that must me modified to adapt the input and output to the use-case.
 
-This script produces a directory (one for each input file, i.e. one per Run) with a name associated to the Run details contained in the input `.root` file. This directory is where the output is stored. This directory will then be the location of the subsequent analysis steps.
+*Note*: there are 2 ways of saving the output files:
+- enable the `output/sub_dir/activate` option: this will automatically produce a directory for each input file with a name associated to the Run details contained in the input `.root` file. The location of this sub directory is given by `output/dir`.
+- do not enable the `output/sub_dir/activate` option: one needs to fill the `output/file` option with the given output file names that will be created in `output/dir`.
 
-*Note*: it was chosen to work with a directory per Run because of the many files that might be produced during the next steps of the analysis.
+*Note*: it can be easier to work with a directory per input file (i.e. per Run) because of the many files that might be produced during the next steps of the analysis.
 
 
 

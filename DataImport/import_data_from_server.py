@@ -23,10 +23,18 @@ except ModuleNotFoundError:
 
 try:
     sys.path.append("../Utils/")
-    from utils import enforce_trailing_slash, Logger
+    from utils import enforce_trailing_slash
 except ModuleNotFoundError:
     print(
         "Module 'utils' is not in the '../Utils/' directory. Add it to run this script."
+    )
+
+try:
+    sys.path.append("../Utils/")
+    from logger import Logger
+except ModuleNotFoundError:
+    print(
+        "Module 'logger' is not in the '../Utils/' directory. Add it to run this script."
     )
 
 POSSIBLE_TYPE_OF_CONTENT: list[str] = ["directory", "file"]

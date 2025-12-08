@@ -48,26 +48,35 @@ def main(name_config_file: str, debug: bool) -> None:
         config = load(yml_config_file, FullLoader)
 
     my_input = config["DecodeWC"]["input"]
-    output = config["DecodeWC"]["output"]
+    name_output = config["DecodeWC"]["output"]["name"]
+    merge_output: bool = config["DecodeWC"]["output"]["merge"]["activate"]
+    rm_tmp_file: bool = config["DecodeWC"]["output"]["merge"]["rm_tmp_file"]
     exp = config["DecodeWC"]["exp"]
     run = config["DecodeWC"]["run"]
     flat: bool = config["DecodeWC"]["flat"]
 
     # safeties
-    if isinstance(my_input, list) and isinstance(output, list):
-        if len(my_input) != len(output):
+    if isinstance(my_input, list) and isinstance(name_output, list):
+        if len(my_input) != len(name_output):
             Logger(
                 "Input and output must be of same size if they are lists!",
                 "FATAL",
             )
-    if output != "auto":
+    if name_output != "auto" and not merge_output:
         if not (
-            isinstance(my_input, type(output)) and isinstance(output, type(my_input))
+            isinstance(my_input, type(name_output))
+            and isinstance(name_output, type(my_input))
         ):
             Logger(
-                "Local input and output must be of same type if output is not 'auto'!",
+                "Local input and output must be of same type if output is not 'auto'"
+                "and 'merge' is not activated!",
                 "FATAL",
             )
+    if name_output == "auto" and merge_output:
+        Logger(
+            "Option 'output/name' cannot be 'auto' if 'merge' is activated!",
+            "FATAL",
+        )
     if not isinstance(flat, list) and not isinstance(flat, bool):
         Logger("The option 'flat' must be a boolean or a list of booleans!", "FATAL")
     if isinstance(flat, list):
@@ -83,25 +92,33 @@ def main(name_config_file: str, debug: bool) -> None:
     # go to STIVI Reconstruction directory
     cd_stivi: str = f"cd {name_stivi_reco_dir}"
     if debug:
-        Logger(f"Command to go to STIVI Reconstruction directory: {cd_stivi}", "INFO")
+        Logger(f"Command to go to STIVI Reconstruction directory: {cd_stivi}", "DEBUG")
 
     # enforce list if my_input (hence neither output) is a list
     if not isinstance(my_input, list):
         my_input = [my_input]
     n_input: int = len(my_input)
-    if not isinstance(output, list):
-        output = [output] * n_input
     if not isinstance(exp, list):
         exp = [exp] * n_input
     if not isinstance(run, list):
         run = [run] * n_input
     if not isinstance(flat, list):
         flat = [flat] * n_input
+    if merge_output:
+        if flat:
+            name_output = [
+                f"tmp_{name.split('/')[-1]}_FlatTree.root" for name in my_input
+            ]
+        else:
+            name_output = [f"tmp_{name.split('/')[-1]}.root" for name in my_input]
+    else:
+        if not isinstance(name_output, list):
+            name_output = [name_output] * n_input
 
     cmd_decode_wc = ""
 
     for i, (in_, out_, exp_, run_, flat_) in enumerate(
-        zip(my_input, output, exp, run, flat)
+        zip(my_input, name_output, exp, run, flat)
     ):
         cmd_decode_wc += f"DecodeWC -in {in_} -out {out_} -exp {exp_} -run {run_}"
         if flat_:
@@ -111,12 +128,30 @@ def main(name_config_file: str, debug: bool) -> None:
             cmd_decode_wc += " && "
 
     if debug:
-        Logger(f"Command to DecodeWC: {cmd_decode_wc}", "INFO")
+        Logger(f"Command to DecodeWC: {cmd_decode_wc}", "DEBUG")
+
+    cmd_merge = ""
+    if merge_output:
+        cmd_merge += f"hadd {config['DecodeWC']['output']['name']} "
+        for name in name_output:
+            if flat:
+                cmd_merge += f"{name} "
+
+    cmd_rm: str = ""
+    if merge_output and rm_tmp_file:
+        cmd_rm = "rm " + str(" ").join(name_output)
 
     cmd: str = cd_stivi + " && " + cmd_decode_wc
+    if merge_output:
+        cmd += " && " + cmd_merge
+        if rm_tmp_file:
+            cmd += " && " + cmd_rm
 
     if config["command"]["print"]:
-        Logger(f"Full command: {cmd}", "INFO")
+        Logger(
+            f"Enter this command line to DecodeWC with selected configuration:\n\n{cmd}",
+            "INFO",
+        )
     if config["command"]["run"]:
         system(cmd)
 

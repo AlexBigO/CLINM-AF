@@ -7,7 +7,9 @@ STIVI:
 
 DecodeWC:
   input: [file1, file2]
-  output: auto # auto or file name
+  output:
+    name: auto # auto or file name
+    merge: True  # True or False
   exp: CLINM2025
-  run: [4, 5]
+  run: 1  # single value (if all files are from same run) or list matching input entries
   flat: [True, False] # True or False

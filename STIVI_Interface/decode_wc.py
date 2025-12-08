@@ -28,7 +28,7 @@ except ModuleNotFoundError:
     )
 
 
-# pylint:disable=too-many-locals, too-many-branches
+# pylint:disable=too-many-locals, too-many-branches, too-many-statements
 def main(name_config_file: str, debug: bool) -> None:
     """
     Main function

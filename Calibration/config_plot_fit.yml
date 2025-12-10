@@ -1,0 +1,32 @@
+input:
+  file: test_fit_output.root
+  data: [
+    Pl0Amplitude,
+    Pl0Charge,
+    Pl1Amplitude,
+    Pl1Charge
+  ]
+
+plot:
+  label: [
+    Plastic 1 Amplitude,
+    Plastic 1 Charge,
+    Plastic 2 Amplitude,
+    Plastic 2 Charge
+  ]
+  info:
+    exp: CLINM
+    campaign: CNAO April 2025
+    beam:
+      particle: ^{12}C
+      energy: 119.5 MeV/u
+    run: 1
+
+output:
+  file: [
+    Fit_Amplitude_Pl1_Config1_Run1,
+    Fit_Charge_Pl1_Config1_Run1,
+    Fit_Amplitude_Pl2_Config1_Run1,
+    Fit_Charge_Pl2_Config1_Run1
+  ]
+  extension: [pdf, png, eps]  # on top of .root file

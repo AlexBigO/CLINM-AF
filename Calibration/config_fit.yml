@@ -1,0 +1,41 @@
+input:
+  file: /Users/abigot/CLINM/Calibration/CNAO_0425/Run_01_Config1.root
+  tree:
+    name: tree
+    branches: [
+      pl0ntu.fPlAmplitude,
+      pl0ntu.fPlCharge,
+      pl1ntu.fPlAmplitude,
+      pl1ntu.fPlCharge
+    ]
+
+histogram_config:
+  name: [
+    Pl0Amplitude,
+    Pl0Charge,
+    Pl1Amplitude,
+    Pl1Charge
+  ]
+  nbin: [
+    50,
+    50,
+    50,
+    50
+  ]
+  range: [
+    [0, 200],
+    [500, 2500],
+    [0, 200],
+    [1000, 3000]
+  ]
+
+fit:
+  range: [
+    [40, 120],
+    [800, 2000],
+    [70, 130],
+    [1400, 2500]
+  ]
+
+output:
+  name: test_fit_output.root

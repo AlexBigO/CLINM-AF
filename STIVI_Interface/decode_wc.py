@@ -28,7 +28,7 @@ except ModuleNotFoundError:
     )
 
 
-# pylint:disable=too-many-locals, too-many-branches
+# pylint:disable=too-many-locals, too-many-branches, too-many-statements
 def main(name_config_file: str, debug: bool) -> None:
     """
     Main function
@@ -49,11 +49,13 @@ def main(name_config_file: str, debug: bool) -> None:
 
     my_input = config["DecodeWC"]["input"]
     name_output = config["DecodeWC"]["output"]["name"]
+    use_stivi_merge: bool = config["DecodeWC"]["use_stivi_merge"]
     merge_output: bool = config["DecodeWC"]["output"]["merge"]["activate"]
     rm_tmp_file: bool = config["DecodeWC"]["output"]["merge"]["rm_tmp_file"]
     exp = config["DecodeWC"]["exp"]
     run = config["DecodeWC"]["run"]
     flat: bool = config["DecodeWC"]["flat"]
+    extra_option = config["DecodeWC"]["extra_option"]
 
     # safeties
     if isinstance(my_input, list) and isinstance(name_output, list):
@@ -62,14 +64,14 @@ def main(name_config_file: str, debug: bool) -> None:
                 "Input and output must be of same size if they are lists!",
                 "FATAL",
             )
-    if name_output != "auto" and not merge_output:
+    if name_output != "auto" and not merge_output and not use_stivi_merge:
         if not (
             isinstance(my_input, type(name_output))
             and isinstance(name_output, type(my_input))
         ):
             Logger(
-                "Local input and output must be of same type if output is not 'auto'"
-                "and 'merge' is not activated!",
+                "Local input and output must be of same type if output is not 'auto' "
+                "and ('merge' is not activated or 'use_stivi_merge' is not activated)!",
                 "FATAL",
             )
     if name_output == "auto" and merge_output:
@@ -86,6 +88,13 @@ def main(name_config_file: str, debug: bool) -> None:
                     "The option 'flat' must be a boolean or a list of booleans!",
                     "FATAL",
                 )
+
+    if rm_tmp_file and not merge_output:
+        Logger(
+            "Option 'rm_tmp_file' enabled but 'merge' not activated "
+            "so no temporary files will be produced",
+            "WARNING",
+        )
 
     name_stivi_reco_dir: str = config["STIVI"]["Reconstruction_dir"]
 
@@ -105,12 +114,7 @@ def main(name_config_file: str, debug: bool) -> None:
     if not isinstance(flat, list):
         flat = [flat] * n_input
     if merge_output:
-        if flat:
-            name_output = [
-                f"tmp_{name.split('/')[-1]}_FlatTree.root" for name in my_input
-            ]
-        else:
-            name_output = [f"tmp_{name.split('/')[-1]}.root" for name in my_input]
+        name_output = [f"tmp_{name.split('/')[-1]}.root" for name in my_input]
     else:
         if not isinstance(name_output, list):
             name_output = [name_output] * n_input
@@ -123,6 +127,8 @@ def main(name_config_file: str, debug: bool) -> None:
         cmd_decode_wc += f"DecodeWC -in {in_} -out {out_} -exp {exp_} -run {run_}"
         if flat_:
             cmd_decode_wc += " -flat"
+        if extra_option is not None:
+            cmd_decode_wc += " " + extra_option
 
         if i < n_input - 1:
             cmd_decode_wc += " && "
@@ -130,12 +136,19 @@ def main(name_config_file: str, debug: bool) -> None:
     if debug:
         Logger(f"Command to DecodeWC: {cmd_decode_wc}", "DEBUG")
 
+    # STIVI adds '_FlatTree' before '.root' when flat option enabled
+    # so we need to take it into account for the merge and rm commands
+    if flat:
+        name_output = [
+            name.replace(".root", str()) + "_FlatTree.root"
+            for name in name_output.copy()
+        ]
+
     cmd_merge = ""
     if merge_output:
         cmd_merge += f"hadd {config['DecodeWC']['output']['name']} "
         for name in name_output:
-            if flat:
-                cmd_merge += f"{name} "
+            cmd_merge += f"{name} "
 
     cmd_rm: str = ""
     if merge_output and rm_tmp_file:

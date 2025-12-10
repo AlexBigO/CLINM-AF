@@ -33,6 +33,57 @@ def enforce_trailing_slash(path):
     return path
 
 
+def enforce_list(x) -> list[str]:
+    """
+    Helper method to enforce list type
+
+    Parameters
+    ----------
+    - x: a string or a list of string
+
+    Returns
+    ----------
+    - x_list if x was not a list, x itself otherwise
+    """
+
+    if not isinstance(x, list):
+        # handle possible whitespaces in config file entry
+        x_list = x.split(",")
+        for i, element in enumerate(x_list):
+            x_list[i] = element.strip()  # remove possible whitespaces
+        return x_list
+
+    return x
+
+
+def get_h_config(cfg: dict, idx: int) -> tuple:
+    """
+    Helper function to get the configuration of a histogram
+
+    Parameters
+    ------------------------------------------------
+    - cfg: dict
+        Configuration dictionary of the histogram
+
+    - idx: int
+        Index among the lists inside the cfg dictionary entries
+
+    Returns
+    ------------------------------------------------
+    - h_config: tuple
+        Histogram configuration to give a r.TH1 constructor
+    """
+
+    h_config = (
+        cfg["name"][idx],
+        f"; {cfg['name'][idx]}; counts",
+        cfg["nbin"][idx],
+        cfg["range"][idx][0],
+        cfg["range"][idx][1],
+    )
+    return h_config
+
+
 # pylint: disable=too-many-arguments
 def configure_canvas(
     name_canvas, x_min, y_axis_min, x_max, y_axis_max, title, log_y_axis=False

@@ -1,0 +1,9 @@
+source:
+    energy: 119.5  # in MeV/u
+    n: 1000
+
+campaign: CNAO_0425
+run: "01"
+
+output:
+    dir: ./output

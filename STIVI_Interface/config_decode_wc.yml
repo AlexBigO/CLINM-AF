@@ -13,3 +13,4 @@ DecodeWC:
   exp: CLINM2025
   run: 1  # single value (if all files are from same run) or list matching input entries
   flat: [True, False] # True or False
+  extra_option: null  # null to deactivate

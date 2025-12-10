@@ -1,0 +1,19 @@
+[Elements]
+Aluminium:  S= Al  ; Z= 13. ; A=  26.981539 g/mole
+Bromine:    S= Br  ; Z= 35. ; A=  79.90  g/mole
+Carbon:     S= C  ; Z= 6 ; A= 12.01  g/mole
+Cerium:     S= Ce  ; Z= 58. ; A= 140.116 g/mole
+Fluorine:   S= F  ; Z= 9 ; A= 18.998 g/mole
+
+[Materials]
+Aluminium: d=2.69890 g/cm3 ; n=1 ; state=solid
+        +el: name=auto       ; n=1
+
+CeBr3: d=5.1 g/cm3 ; n=2 ; state=solid
+       +el: name=Cerium ; n=1
+       +el: name=Bromine ; n=3
+
+# === Téflon (PTFE) ===
+Teflon: d=2.2 g/cm3 ; n=2 ; state=solid
+        +el: name=Carbon ; n=2
+        +el: name=Fluorine ; n=4

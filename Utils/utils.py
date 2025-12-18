@@ -7,7 +7,12 @@ author: Alexandre BIGOT, alexandre.bigot@iphc.cnrs.fr
 """
 
 import sys
-import ROOT as r
+
+try:
+    import ROOT as r
+except ModuleNotFoundError:
+    print("Module 'root' is not installed. Please install it to run this script.")
+
 import pandas as pd
 import uproot
 
@@ -47,11 +52,13 @@ def enforce_list(x) -> list[str]:
     """
 
     if not isinstance(x, list):
-        # handle possible whitespaces in config file entry
-        x_list = x.split(",")
-        for i, element in enumerate(x_list):
-            x_list[i] = element.strip()  # remove possible whitespaces
-        return x_list
+        if isinstance(x, str):
+            # handle possible whitespaces in config file entry
+            x_list = x.split(",")
+            for i, element in enumerate(x_list):
+                x_list[i] = element.strip()  # remove possible whitespaces
+            return x_list
+        return [x]
 
     return x
 

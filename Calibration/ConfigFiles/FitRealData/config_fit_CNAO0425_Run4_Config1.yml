@@ -1,0 +1,47 @@
+input:
+  file: /Users/abigot/CLINM/Calibration/CNAO_0425/Run_04_Config1.root
+  tree:
+    name: tree
+    branches: [
+      pl0ntu.fPlAmplitude,
+      pl0ntu.fPlCharge,
+      pl1ntu.fPlAmplitude,
+      pl1ntu.fPlCharge
+    ]
+
+histogram_config:
+  name: [
+    Pl0Amplitude,
+    Pl0Charge,
+    Pl1Amplitude,
+    Pl1Charge
+  ]
+  nbin: [
+    50,
+    50,
+    50,
+    50
+  ]
+  range: [
+    [0, 200],
+    [500, 2500],
+    [0, 200],
+    [1000, 3000]
+  ]
+
+fit:
+  func: [
+    "gaus",
+    "gaus",
+    "gaus",
+    "gaus"
+  ]
+  range: [
+    [40, 100],
+    [700, 1800],
+    [60, 110],
+    [1100, 2100]
+  ]
+
+output:
+  file: fit_result_CNAO0425_Run4_Config1.root

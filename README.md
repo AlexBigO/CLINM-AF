@@ -27,6 +27,16 @@ conda env create -f environment.yml
 conda env update --name clinamf_env --file environment.yml --prune
 ```
 
+## Create an alias for this repository
+
+In your `~/.bashrc` or `~/.bash_profile` add
+
+```
+export CLINMAF="<put the path to your local copy of this repo>"
+```
+
+So you can directly run the command lines below and be sure that they are ran from the right directory.
+
 # <font color="blue">**Choices**</font>
 
 We decide to work with the following environment:
@@ -52,7 +62,7 @@ We want to retrieve data from a server (e.g. `sbgui11`). These data can either b
 
 To import data, do:
 ```
-cd DataImport
+cd $CLINMAF/DataImport/
 python3 import_data_from_server.py config_import_data.yml
 ```
 
@@ -79,7 +89,7 @@ python3 import_data_from_server.py config_import_data.yml
 
 To run the `DecodeWC` action of STIVI, run:
 ```
-cd STIVI_Interface
+cd $CLINMAF/STIVI_Interface/
 python3 decode_wc.py config_decode_wc.yml
 ```
 
@@ -97,7 +107,10 @@ For each `.root` file we want to analyse:
 
 To do so, we run:
 
-```python3 convert_stivi_output.py config_convert_stivi_output.yml```
+```
+cd $CLINMAF/STIVI_Interface/
+python3 convert_stivi_output.py config_convert_stivi_output.yml
+```
 
 where:
 - `convert_stivi_output.py` is a generic python script that should not be modified;
@@ -125,7 +138,24 @@ One needs to perform this calibration in two steps:
 - real data analysis to fit amplitude/charge distributions, retrieve mean and standard deviation of the gaussian
 - simulation via GATE to fit deposited energy distribution, retrieve mean and standard deviation of the gaussian
 
+
+## <font color="darkgreen">**The simulation**</font>
+
+```
+cd $CLINMAF/Calibration/Simulation/
+python3 simulation.py config_simu.py
+```
+
+*Notes*:
+- we use Gate to perform this simulation
+- one can modify some aspects of the configuration, namely the source energy (in MeV/u) and number of particles produced, the name of the measurement campaign along with the Run number, and of course the output directory.
+- the output file names are generated automatically according to the elements of the configuration.
+
 ## <font color="darkgreen">**The fit**</font>
+
+```
+cd $CLINMAF/Calibration/
+```
 
 These two steps require a common tool: fit data with a gaussian function. So, we decide to work with a common script called `fit.py` that shall be used as follows:
 
@@ -140,7 +170,7 @@ In `config_fit.yml`, one needs to set an input file that is the output of `decod
 
 ### <font color="black">**Get deposited energy from simulation**</font>
 
-*Note*: We use Gate to perform this simulation.
+
 
 In `config_fit.yml`, one needs to set an input file that is an output of a GATE simulation (matching the configuration of a real Run).
 

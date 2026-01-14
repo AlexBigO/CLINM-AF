@@ -429,7 +429,7 @@ def main(name_config_file: str) -> None:
         latex_fitpars.DrawLatex(
             xlatex_fitpars,
             ylatex_fitpars_max - 0.15,
-            f"#rho_{{ #sigma_{{l}}, #sigma_{{ g }} }} = {my_res[6]:.3f}",
+            f"#rho_{{ #sigma_{{l}} #sigma_{{ g }} }} = {my_res[6]:.3f}",
         )
         latex_fitpars.DrawLatex(
             xlatex_fitpars,

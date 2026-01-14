@@ -17,31 +17,83 @@ histogram_config:
     Pl1Charge
   ]
   nbin: [
-    50,
-    50,
-    50,
-    50
+    200,
+    200,
+    200,
+    200
   ]
-  range: [
-    [0, 200],
-    [500, 2500],
-    [0, 200],
-    [1000, 3000]
-  ]
+  # range: [
+  #   [0, 200],
+  #   [500, 2500],
+  #   [0, 200],
+  #   [1000, 3000]
+  # ]
 
 fit:
-  func: [
-    "gaus",
-    "gaus",
-    "gaus",
-    "gaus"
-  ]
   range: [
     [40, 100],
     [700, 1800],
-    [60, 120],
-    [1200, 2200]
+    [60, 110],
+    [1200, 2100]
   ]
+  pars:
+    MPV_landau: [
+      [68, 65, 75],
+      [1200, 1100, 1300],
+      [83, 80, 87],
+      [1600, 1500, 1700]
+    ]
+    sigma_landau: [
+      [3, 0.1, 100],
+      [5, 0.1, 1000],
+      [3, 0.1, 100],
+      [10, 0.1, 1000]
+    ]
+    mu_gauss: [
+      [0, -1, 6],
+      [0, -10, 150],
+      [0, -1, 15],
+      [0, -10, 150]
+    ]
+    sigma_gauss: [
+      [2, 0.3, 100],
+      [100, 0.3, 200],
+      [5, 0.3, 100],
+      [100, 0.3, 200]
+    ]
+    norm: [
+      [2000, 1.0, 1000000],
+      [2000, 1.0, 1000000],
+      [2500, 1.0, 1000000],
+      [20000, 1.0, 1000000]
+    ]
 
 output:
   file: fit_result_CNAO0425_Run3_Config1.root
+  plot:
+    activate: True
+    label: [
+      Amplitude of Plastic 1 (mV),
+      Charge of Plastic 1 (mV.s),
+      Amplitude of Plastic 2 (mV),
+      Charge of Plastic 2 (mV.s)
+    ]
+    ymin: [
+      0,
+      0,
+      0,
+      0
+    ]
+    ymax: [
+      "auto",
+      "auto",
+      "auto",
+      "auto"
+    ]
+    info:
+      exp: CLINM
+      campaign: CNAO April 2025
+      beam:
+        particle: ^{12}C
+        energy: "160.2 MeV/u"
+      run: 3

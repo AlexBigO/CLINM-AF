@@ -159,8 +159,12 @@ def main(name_config_file: str, debug: bool) -> None:
         cmd += " && " + cmd_merge
         if rm_tmp_file:
             cmd += " && " + cmd_rm
-    elif n_input == 1:
-        cmd_rename = f"mv {name_output[0]} {name_output[0].replace('_FlatTree', str())}"
+    else:
+        cmd_rename = str()
+        for i, name in enumerate(name_output):
+            cmd_rename += f"mv {name} {name.replace('_FlatTree', str())}"
+            if i < n_input - 1:
+                cmd_rename += " && "
         cmd += " && " + cmd_rename
 
     if config["command"]["print"]:

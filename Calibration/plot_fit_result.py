@@ -43,6 +43,17 @@ except ModuleNotFoundError:
         "Module 'style_formatter' is not in the '../Utils/' directory. Add it to run this script."
     )
 
+try:
+    sys.path.append("../Utils/")
+    from fit_utils import lorentzian
+except ModuleNotFoundError:
+    print(
+        "Module 'fit_utils' is not in the '../Utils/' directory. Add it to run this script."
+    )
+
+
+POSSIBLE_FIT_FUNCS = ["gaus", "lorentz", "crystalball"]
+
 
 # pylint:disable=too-many-statements, too-many-locals
 def main(name_config_file: str) -> None:
@@ -65,6 +76,7 @@ def main(name_config_file: str) -> None:
     name_infile: str = config["input"]["file"]
     data: list[str] = enforce_list(config["input"]["data"])
     label: list[str] = enforce_list(config["plot"]["label"])
+    funcs_fit: list[str] = enforce_list(config["input"]["fit_func"])
     name_outfile: list[str] = enforce_list(config["output"]["file"])
     extension: list[str] = enforce_list(config["output"]["extension"])
 
@@ -75,6 +87,10 @@ def main(name_config_file: str) -> None:
             "FATAL",
         )
 
+    for func_fit in funcs_fit:
+        if func_fit not in POSSIBLE_FIT_FUNCS:
+            Logger("The 'fit/func' options must be 'gaus' or 'lorentz!", "FATAL")
+
     exp: str = config["plot"]["info"]["exp"]
     campaign: str = config["plot"]["info"]["campaign"]
     particle_beam: str = config["plot"]["info"]["beam"]["particle"]
@@ -83,7 +99,9 @@ def main(name_config_file: str) -> None:
 
     infile: r.TFile = r.TFile.Open(name_infile)
 
-    for i, (dat, lab, name_ofile) in enumerate(zip(data, label, name_outfile)):
+    for i, (dat, lab, func_fit, name_ofile) in enumerate(
+        zip(data, label, funcs_fit, name_outfile)
+    ):
 
         if "Charge" in dat:
             padrightmargin = 0.09
@@ -106,21 +124,32 @@ def main(name_config_file: str) -> None:
         ndf = h_fitres.GetBinContent(3)
         chi2_ndf = float(chi2) / ndf
 
+        eq_func: str = str()
+        npars: int = 3
+        if func_fit == "gaus":
+            eq_func = "gaus"
+            npars = 3
+        elif func_fit == "lorentz":
+            eq_func = lorentzian()
+            npars = 3
+        elif func_fit == "crystalball":
+            eq_func = "crystalball"
+            npars = 5
+
         pars, unc_pars = [], []
-        for ibin in range(4, 7):
+        for ibin in range(6, 6 + npars):
             pars.append(h_fitres.GetBinContent(ibin))
             unc_pars.append(h_fitres.GetBinError(ibin))
 
-        title = f";{lab}; Entries;"
-        xmin = h_fitres.GetBinContent(7)
-        ymin = h_data.GetMinimum()
-        xmax = h_fitres.GetBinContent(8)
-        ymax = 1.05 * h_data.GetMaximum()
-
-        c = configure_canvas(f"c{i}", xmin, ymin, xmax, ymax, title)
-
-        func: r.TF1 = r.TF1("func", "gaus", xmin, xmax)
+        xmin = h_fitres.GetBinContent(4)
+        xmax = h_fitres.GetBinContent(5)
+        func: r.TF1 = r.TF1("func", eq_func, xmin, xmax)
         func.SetParameters(*pars)
+
+        ymin = h_data.GetMinimum()
+        ymax = 1.05 * max(func.GetMaximum(), h_data.GetMaximum())
+        title = f";{lab}; Entries;"
+        c = configure_canvas(f"c{i}", xmin, ymin, xmax, ymax, title)
 
         set_object_style(h_data, color=r.kBlack, linewidth=2)
         set_object_style(func, color=r.kAzure + 2, linewidth=2)
@@ -132,7 +161,12 @@ def main(name_config_file: str) -> None:
         leg.SetTextSize(0.035)
         leg.SetFillStyle(0)
         leg.AddEntry(h_data, "Data", "p")
-        leg.AddEntry(func, "Gaussian", "l")
+        if func_fit == "gaus":
+            leg.AddEntry(func, "Gaussian", "l")
+        elif func_fit == "lorentz":
+            leg.AddEntry(func, "Lorentzian", "l")
+        elif func_fit == "crystalball":
+            leg.AddEntry(func, "CrystallBall", "l")
         leg.Draw()
 
         # add information in TLatex

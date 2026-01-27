@@ -1,10 +1,16 @@
 input:
-  file: test_fit_output.root
+  file: fit_result_CNAO0425_Run1_Config1.root
   data: [
     Pl0Amplitude,
     Pl0Charge,
     Pl1Amplitude,
     Pl1Charge
+  ]
+  fit_func: [
+    "crystalball",
+    "gaus",
+    "gaus",
+    "gaus"
   ]
 
 plot:

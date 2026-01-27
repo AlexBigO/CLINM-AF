@@ -1,5 +1,5 @@
 input:
-  file: /Users/abigot/CLINM/Calibration/CNAO_0425/Run_01_Config1.root
+  file: /Users/abigot/CLINM/Calibration/CNAO_0425/Run_06_Config1.root
   tree:
     name: tree
     branches: [
@@ -22,26 +22,26 @@ histogram_config:
     200,
     200
   ]
-    
+
 fit:
   range: [
-    [40, 120],
-    [700, 2100],
-    [70, 130],
-    [1400, 2400]
+    [3, 14],
+    [20, 240],
+    [5, 13],
+    [60, 220]
   ]
   pars:
     MPV_landau: [
-      ["auto", 50, 90],
-      [1350, 1200, 1500],
-      [95, 85, 105],
-      [1800, 1700, 2000]
+      [7, 5, 9],
+      [90, 60, 105],
+      [9, 7, 10],
+      [130, 110, 140]
     ]
     sigma_landau: [
-      [3, 0.1, 100],
-      [5, 0.1, 1000],
-      [0.8, 0.1, 100],
-      [20, 0.1, 1000]
+      [0.1, 0.01, 10],
+      [10, 0.01, 1000],
+      [0.1, 0.01, 10],
+      [10, 0.1, 1000]
     ]
     mu_gauss: [
       [0, -1, 6],
@@ -50,22 +50,22 @@ fit:
       [0, -10, 150]
     ]
     sigma_gauss: [
-      [2, 0.3, 100],
-      [130, 0.3, 200],
-      [5, 0.3, 100],
-      [100, 0.3, 200]
+      [1, 0.05, 10],
+      [5, 0.1, 30],
+      [1, 0.05, 10],
+      [10, 0.1, 40]
     ]
     norm: [
       [2000, 1.0, 1000000],
-      [20000, 1.0, 1000000],
       [2000, 1.0, 1000000],
+      [2500, 1.0, 1000000],
       [20000, 1.0, 1000000]
     ]
 
 output:
-  file: FitResults/RealData/fit_result_CNAO0425_Run1_Config1.root
+  file: FitResults/RealData/fit_result_CNAO0425_Run6_Config1.root
   plot:
-    activate: False
+    activate: True
     label: [
       Amplitude of Plastic 1 (mV),
       Charge of Plastic 1 (mV.s),
@@ -89,5 +89,5 @@ output:
       campaign: CNAO April 2025
       beam:
         particle: ^{12}C
-        energy: 119.5 MeV/u
-      run: 1
+        energy: "79.84 MeV/u"
+      run: 6

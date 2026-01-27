@@ -1,5 +1,5 @@
 input:
-  file: /Users/abigot/CLINM-AF/Calibration/Simulation/SimResultsPostProd/CNAO0425_Run02_Config1_MC.root
+  file: /Users/abigot/CLINM-AF/Calibration/Simulation/SimResultsPostProd/CYRCE0425_Run04_Config1_MC.root
   tree:
     name: treeMC
     branches: [
@@ -19,25 +19,17 @@ histogram_config:
     
 fit:
   range: [
-    [39, 46],
-    [82, 93]
+    [4.8, 5.9],
+    [16, 18]
   ]
   pars:
-    MPV_landau: [
-      [43, 41, 45],
-      [87, 85, 89]
-    ]
-    sigma_landau: [
-      [0.1, 0.001, 100],
-      [0.1, 0.001, 100]
-    ]
     mu_gauss: [
-      [0, -1, 6],
-      [0, -1, 6]
+      [5.4, 5.2, 5.55],
+      [17, 16.7, 17.4]
     ]
     sigma_gauss: [
-      [1, 0.3, 100],
-      [1, 0.3, 100]
+      [0.1, 0.001, 1],
+      [0.1, 0.001, 1]
     ]
     norm: [
       [2000, 1.0, 1000000],
@@ -45,7 +37,7 @@ fit:
     ]
 
 output:
-  file: FitResults/SimData/fit_result_sim_CNAO0425_Run02_Config1.root
+  file: FitResults/SimData/fit_result_sim_CYRCE0425_Run04_Config1.root
   plot:
     activate: False
     label: [
@@ -66,8 +58,8 @@ output:
     ]
     info:
       exp: CLINM (MC)
-      campaign: CNAO April 2025
+      campaign: CYRCE April 2025
       beam:
-        particle: ^{12}C
-        energy: 140.7 MeV/u
-      run: 2
+        particle: p
+        energy: 21.60 MeV
+      run: 4

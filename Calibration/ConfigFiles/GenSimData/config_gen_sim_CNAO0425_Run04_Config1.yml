@@ -1,0 +1,9 @@
+source:
+    energy: 181.17  # in MeV/u
+    n: 100000
+
+campaign: CNAO0425
+run: "04_Config1"
+
+output:
+    dir: /Users/abigot/CLINM-AF/Calibration/Simulation/SimResultsRaw

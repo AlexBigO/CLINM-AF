@@ -1,0 +1,23 @@
+input:
+  file: /Users/abigot/CLINM-AF/Calibration/Simulation/SimResultsRaw/CYRCE0425_Run03_Config1_MC.root
+  tree:
+    names: [
+      HitsAdderPlastic1,
+      HitsAdderPlastic2
+    ]
+    branches: [
+      TotalEnergyDeposit,
+      RunID,
+      EventID,
+    ]
+
+merge:
+  on_branches: ["EventID", "RunID"] # name of branches to use when merging data frames
+  suffixes: ["Plastic1", "Plastic2"] # suffix for new columns after merge
+  thresholds: [2, 2]  # threshold values on TotalEnergyDeposit
+
+output:
+  file: /Users/abigot/CLINM-AF/Calibration/Simulation/SimResultsPostProd/CYRCE0425_Run03_Config1_MC.root
+  tree:
+    name: treeMC
+  branch_of_interest: TotalEnergyDeposit

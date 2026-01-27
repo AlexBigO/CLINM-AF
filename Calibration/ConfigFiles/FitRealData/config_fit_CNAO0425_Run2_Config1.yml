@@ -69,7 +69,7 @@ fit:
     ]
 
 output:
-  file: fit_result_CNAO0425_Run2_Config1.root
+  file: FitResults/RealData/fit_result_CNAO0425_Run2_Config1.root
   plot:
     activate: True
     label: [

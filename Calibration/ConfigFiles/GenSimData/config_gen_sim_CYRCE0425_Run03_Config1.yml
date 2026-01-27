@@ -1,0 +1,15 @@
+source:
+    energy: 24.92  # in MeV
+    n: 100000
+
+campaign: CYRCE0425
+run: "03_Config1"
+
+width:
+    wheel: 0.29 # mm
+    collimator: 24 # mm
+    plastic1: 2 # mm
+    plastic2: 4 # mm
+
+output:
+    dir: /Users/abigot/CLINM-AF/Calibration/Simulation/SimResultsRaw

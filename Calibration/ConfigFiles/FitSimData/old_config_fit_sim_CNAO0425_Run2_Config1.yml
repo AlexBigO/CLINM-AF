@@ -1,0 +1,23 @@
+input:
+  file: /Users/abigot/CLINM-AF/Calibration/Simulation/output/HitsPlastic1_CNAO_0425_Run02.root
+  tree:
+    name: HitsPlastic1
+    branches: [TotalEnergyDeposit]
+
+histogram_config:
+  name: [Plastic1Edep]
+  nbin: [50]
+  range: [
+    [30, 60]
+  ]
+
+fit:
+  func: [
+    gaus
+  ]
+  range: [
+    [35, 50]
+  ]
+
+output:
+  file: fit_result_simu_CNAO0425_Run2_Config1.root

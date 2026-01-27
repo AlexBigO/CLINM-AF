@@ -1,62 +1,125 @@
 """
-file: plot_fit_result.py
-brief: Script to produce a plot of a fit.py result
-usage: python3 plot_fit_result.py cfg.yml
+file: fit_utils.py
+brief:
+usage:
 note:
 author: Alexandre BIGOT, alexandre.bigot@iphc.cnrs.fr
 """
 
-import sys
+from utils import configure_canvas
+from format_utils import enforce_list
+from style_formatter import set_global_style, set_object_style
 import ROOT as r
+from numpy import arange
 
 try:
-    from yaml import load, FullLoader
+    from math import pi
 except ModuleNotFoundError:
-    print("Module 'pyyaml' is not installed. Please install it to run this script.")
-
-try:
-    from argparse import ArgumentParser
-except ModuleNotFoundError:
-    print("Module 'argparse' is not installed. Please install it to run this script.")
-
-try:
-    sys.path.append("../Utils/")
-    from utils import configure_canvas, enforce_list
-except ModuleNotFoundError:
-    print(
-        "Module 'utils' is not in the '../Utils/' directory. Add it to run this script."
-    )
-
-try:
-    sys.path.append("../Utils/")
-    from logger import Logger
-except ModuleNotFoundError:
-    print(
-        "Module 'logger' is not in the '../Utils/' directory. Add it to run this script."
-    )
-
-try:
-    sys.path.append("../Utils/")
-    from style_formatter import set_global_style, set_object_style
-except ModuleNotFoundError:
-    print(
-        "Module 'style_formatter' is not in the '../Utils/' directory. Add it to run this script."
-    )
-
-try:
-    sys.path.append("../Utils/")
-    from fit_utils import lorentzian
-except ModuleNotFoundError:
-    print(
-        "Module 'fit_utils' is not in the '../Utils/' directory. Add it to run this script."
-    )
+    print("Module 'math' is not installed. Please install it to run this script.")
 
 
-POSSIBLE_FIT_FUNCS = ["gaus", "lorentz", "crystalball"]
+# # pylint: disable=too-few-public-methods
+# class Lorentzian:
+#     """
+#     Class for lorentz fit function
+#     """
+
+#     def __call__(self, x, par):
+#         x0 = par[1]
+#         gamma = par[2]
+#         num = par[0] * 2.0 / pi / gamma
+#         den = 1 + (x[0] - x0) * (x[0] - x0) / (0.5 * gamma) / (0.5 * gamma)
+#         return num / den
+
+
+def langaufun(x, par):
+    # par[0] = Landau MPV
+    # par[1] = Landau width
+    # par[2] = Gaussian sigma
+    # par[3] = normalization
+
+    invsq2pi = 0.3989422804014
+    mpshift = -0.22278298
+
+    mpv = par[0] - mpshift * par[1]
+    sum_ = 0.0
+    np = 100
+    sc = 5.0
+
+    xlow = x[0] - sc * par[2]
+    xupp = x[0] + sc * par[2]
+    step = (xupp - xlow) / np
+
+    for i in range(np):
+        xx = xlow + (i + 0.5) * step
+        land = r.TMath.Landau(xx, mpv, par[1]) / par[1]
+        gaus = r.TMath.Gaus(x[0], xx, par[2])
+        sum_ += land * gaus
+
+    return par[3] * step * sum_ * invsq2pi / par[2]
+
+
+class LanGaus:
+    """
+    Docstring pour LanGaus
+    """
+
+    def __call__(self, x, par):
+
+        # Fit parameters:
+        # par[0]=Width (scale) parameter of Landau density
+        # par[1]=Most Probable (MP, location) parameter of Landau density
+        # par[2]=Total area (integral -inf to inf, normalization constant)
+        # par[3]=Width (sigma) of convoluted Gaussian function
+
+        # In the Landau distribution (represented by the CERNLIB approximation),
+        # the maximum is located at x=-0.22278298 with the location parameter=0.
+        # This shift is corrected within this function, so that the actual
+        # maximum is identical to the MP parameter.
+
+        # Numeric constants
+        invsq2pi = 0.3989422804014  # (2 pi)^(-1/2)
+        mpshift = -0.22278298  # Landau maximum location
+        # Control constants
+        np = 100  # number of convolution steps
+        sc = 5.0  # convolution extends to +-sc Gaussian sigmas
+
+        # Variables
+        sum = 0.0
+
+        #   MP shift correction
+        mpc = par[1] - mpshift * par[0]
+
+        #    Range of convolution integral
+        xlow = x[0] - sc * par[3]
+        xupp = x[0] + sc * par[3]
+
+        step = (xupp - xlow) / np
+
+        # Convolution integral of Landau and Gaussian by sum
+        for i in range(np):
+            xx = xlow + (i - 0.5) * step
+            fland = r.TMath.Landau(xx, mpc, par[0]) / par[0]
+            sum += fland * r.TMath.Gaus(x[0], xx, par[3])
+
+            xx = xupp - (i - 0.5) * step
+            fland = r.TMath.Landau(xx, mpc, par[0]) / par[0]
+            sum += fland * r.TMath.Gaus(x[0], xx, par[3])
+
+        return par[2] * step * sum * invsq2pi / par[3]
+
+
+def lorentzian():
+    """
+    Class for lorentz fit function
+    """
+    num = "[0] * 2 / pi / [2]"
+    den = "1 + (x - [1])*(x - [1]) / ([2]/2) / ([2]/2)"
+    return num + "/ (" + den + ")"
 
 
 # pylint:disable=too-many-statements, too-many-locals
-def main(name_config_file: str) -> None:
+def plot_fit(config: dict) -> None:
     """
     Main function
 
@@ -68,40 +131,22 @@ def main(name_config_file: str) -> None:
 
     padleftmargin = 0.12
 
-    # import configuration
-    config: dict = {}
-    with open(name_config_file, "r", encoding="utf-8") as yml_config_file:
-        config = load(yml_config_file, FullLoader)
+    name_infile: str = config["output"]["file"]
+    data: list[str] = enforce_list(config["histogram_config"]["name"])
+    label: list[str] = enforce_list(config["output"]["plot"]["label"])
+    funcs_fit: list[str] = enforce_list(config["fit"]["func"])
+    name_outfile = name_infile.replace(".root", str()) + ".pdf"
+    # extension: list[str] = enforce_list(config["output"]["extension"])
 
-    name_infile: str = config["input"]["file"]
-    data: list[str] = enforce_list(config["input"]["data"])
-    label: list[str] = enforce_list(config["plot"]["label"])
-    funcs_fit: list[str] = enforce_list(config["input"]["fit_func"])
-    name_outfile: list[str] = enforce_list(config["output"]["file"])
-    extension: list[str] = enforce_list(config["output"]["extension"])
-
-    # safety
-    if not len(data) == len(label) == len(name_outfile):
-        Logger(
-            "'input/data', 'plot/label' and 'output/file' must be of same size!",
-            "FATAL",
-        )
-
-    for func_fit in funcs_fit:
-        if func_fit not in POSSIBLE_FIT_FUNCS:
-            Logger("The 'fit/func' options must be 'gaus' or 'lorentz!", "FATAL")
-
-    exp: str = config["plot"]["info"]["exp"]
-    campaign: str = config["plot"]["info"]["campaign"]
-    particle_beam: str = config["plot"]["info"]["beam"]["particle"]
-    energy_beam: str = config["plot"]["info"]["beam"]["energy"]
-    run_number: str = str(config["plot"]["info"]["run"])
+    exp: str = config["output"]["plot"]["info"]["exp"]
+    campaign: str = config["output"]["plot"]["info"]["campaign"]
+    particle_beam: str = config["output"]["plot"]["info"]["beam"]["particle"]
+    energy_beam: str = config["output"]["plot"]["info"]["beam"]["energy"]
+    run_number: str = str(config["output"]["plot"]["info"]["run"])
 
     infile: r.TFile = r.TFile.Open(name_infile)
 
-    for i, (dat, lab, func_fit, name_ofile) in enumerate(
-        zip(data, label, funcs_fit, name_outfile)
-    ):
+    for i, (dat, lab, func_fit) in enumerate(zip(data, label, funcs_fit)):
 
         if "Charge" in dat:
             padrightmargin = 0.09
@@ -149,7 +194,7 @@ def main(name_config_file: str) -> None:
         ymin = h_data.GetMinimum()
         ymax = 1.05 * max(func.GetMaximum(), h_data.GetMaximum())
         title = f";{lab}; Entries;"
-        c = configure_canvas(f"c{i}", xmin, ymin, xmax, ymax, title)
+        c = configure_canvas(f"canvas{i}", xmin, ymin, xmax, ymax, title)
 
         set_object_style(h_data, color=r.kBlack, linewidth=2)
         set_object_style(func, color=r.kAzure + 2, linewidth=2)
@@ -218,15 +263,11 @@ def main(name_config_file: str) -> None:
         c.Update()
         c.Draw()
 
-        # save plot
-        for ext in extension:
-            c.SaveAs(name_ofile + "." + ext)
+        if i == 0:
+            c.Print(f"{name_outfile}(")
+        elif i == len(data) - 1:
+            c.Print(f"{name_outfile})")
+        else:
+            c.Print(name_outfile)
 
     infile.Close()
-
-
-if __name__ == "__main__":
-    parser = ArgumentParser(description="Arguments")
-    parser.add_argument("name_config_file", metavar="text", default="config.yaml")
-    args = parser.parse_args()
-    main(args.name_config_file)

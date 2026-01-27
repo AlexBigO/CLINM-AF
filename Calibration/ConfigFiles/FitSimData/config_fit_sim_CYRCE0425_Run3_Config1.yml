@@ -1,0 +1,65 @@
+input:
+  file: /Users/abigot/CLINM-AF/Calibration/Simulation/SimResultsPostProd/CYRCE0425_Run03_Config1_MC.root
+  tree:
+    name: treeMC
+    branches: [
+      TotalEnergyDepositPlastic1,
+      TotalEnergyDepositPlastic2
+    ]
+
+histogram_config:
+  name: [
+    Plastic1Edep,
+    Plastic2Edep
+  ]
+  nbin: [
+    200,
+    200
+  ]
+    
+fit:
+  range: [
+    [4.7, 5.8],
+    [17, 18.6]
+  ]
+  pars:
+    mu_gauss: [
+      [5.3, 5.1, 5.35],
+      [17.8, 17.5, 18.2]
+    ]
+    sigma_gauss: [
+      [0.1, 0.001, 1],
+      [0.1, 0.001, 1]
+    ]
+    norm: [
+      [2000, 1.0, 1000000],
+      [2000, 1.0, 1000000]
+    ]
+
+output:
+  file: FitResults/SimData/fit_result_sim_CYRCE0425_Run03_Config1.root
+  plot:
+    activate: False
+    label: [
+      "E_{dep} of Plastic 1 (MeV)",
+      "E_{dep} of Plastic 2 (MeV)"
+    ]
+    ymin: [
+      0,
+      0,
+      0,
+      0
+    ]
+    ymax: [
+      "auto",
+      "auto",
+      "auto",
+      "auto"
+    ]
+    info:
+      exp: CLINM (MC)
+      campaign: CYRCE April 2025
+      beam:
+        particle: p
+        energy: 22.30 MeV
+      run: 3

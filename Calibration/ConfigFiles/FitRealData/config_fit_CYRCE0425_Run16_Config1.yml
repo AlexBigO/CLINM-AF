@@ -1,0 +1,93 @@
+input:
+  file: /Users/abigot/CLINM/Calibration/CYRCE_0425/Run_16_Config1.root
+  tree:
+    name: tree
+    branches: [
+      pl0ntu.fPlAmplitude,
+      pl0ntu.fPlCharge,
+      pl1ntu.fPlAmplitude,
+      pl1ntu.fPlCharge
+    ]
+
+histogram_config:
+  name: [
+    Pl0Amplitude,
+    Pl0Charge,
+    Pl1Amplitude,
+    Pl1Charge
+  ]
+  nbin: [
+    200,
+    200,
+    200,
+    200
+  ]
+    
+fit:
+  range: [
+    [5, 35],
+    [-200, 800],
+    [1, 5],
+    [1, 4]
+  ]
+  pars:
+    MPV_landau: [
+      [16, 14, 18],
+      [200, 150, 300],
+      [2.4, 2, 3],
+      [3, 1.5, 4]
+    ]
+    sigma_landau: [
+      [0.2, 0.05, 100],
+      [7.6, 0.05, 1000],
+      [0.3, 0.001, 100],
+      [0.1, 0.001, 1000]
+    ]
+    mu_gauss: [
+      [0, -1, 6],
+      [0, -10, 150],
+      [0, -1, 15],
+      [0, -10, 150]
+    ]
+    sigma_gauss: [
+      [3.5, 0.3, 10],
+      [111, 0.3, 250],
+      [1, 0.05, 30],
+      [0.2, 0.05, 250]
+    ]
+    norm: [
+      [5000, 1.0, 1000000],
+      [20000, 1.0, 1000000],
+      [50000, 1.0, 1000000],
+      [20000, 1.0, 1000000]
+    ]
+
+output:
+  file: /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CYRCE0425_Run16_Config1.root
+  plot:
+    # activate: False
+    label: [
+      Amplitude of Plastic 1 (mV),
+      Charge of Plastic 1 (mV.s),
+      Amplitude of Plastic 2 (mV),
+      Charge of Plastic 2 (mV.s)
+    ]
+    ymin: [
+      0,
+      0,
+      0,
+      0
+    ]
+    ymax: [
+      "auto",
+      "auto",
+      "auto",
+      "auto"
+    ]
+    info:
+      exp: CLINM
+      campaign: CYRCE April 2025
+      beam:
+        particle: p
+        energy: "10.8 MeV"
+      run: 16

@@ -1,0 +1,73 @@
+input:
+  file: /Users/abigot/CLINM-AF/Calibration/Simulation/SimResultsPostProd/CNAO0425_Run04_Config1_MC.root
+  tree:
+    name: treeMC
+    branches: [
+      TotalEnergyDepositPlastic1,
+      TotalEnergyDepositPlastic2
+    ]
+
+histogram_config:
+  name: [
+    Plastic1Edep,
+    Plastic2Edep
+  ]
+  nbin: [
+    200,
+    200
+  ]
+    
+fit:
+  range: [
+    [31, 40],
+    [67, 78]
+  ]
+  pars:
+    MPV_landau: [
+      [35, 33, 37],
+      [72, 69, 75]
+    ]
+    sigma_landau: [
+      [0.1, 0.001, 100],
+      [0.1, 0.001, 100]
+    ]
+    mu_gauss: [
+      [0, -1, 6],
+      [0, -1, 6]
+    ]
+    sigma_gauss: [
+      [1, 0.3, 100],
+      [1, 0.3, 100]
+    ]
+    norm: [
+      [2000, 1.0, 1000000],
+      [2000, 1.0, 1000000]
+    ]
+
+output:
+  file: FitResults/SimData/fit_result_sim_CNAO0425_Run04_Config1.root
+  plot:
+    activate: False
+    label: [
+      "E_{dep} of Plastic 1 (MeV)",
+      "E_{dep} of Plastic 2 (MeV)"
+    ]
+    ymin: [
+      0,
+      0,
+      0,
+      0
+    ]
+    ymax: [
+      "auto",
+      "auto",
+      "auto",
+      "auto"
+    ]
+    info:
+      exp: CLINM (MC)
+      campaign: CNAO April 2025
+      beam:
+        particle: ^{12}C
+        energy: 181.17 MeV/u
+      run: 4

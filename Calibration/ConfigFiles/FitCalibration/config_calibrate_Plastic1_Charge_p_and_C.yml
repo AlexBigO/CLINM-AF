@@ -1,0 +1,78 @@
+input:
+  real:
+    file: 
+      CNAO_12C: [  # name of input file(s)
+        /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CNAO0425_Run1_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CNAO0425_Run2_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CNAO0425_Run3_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CNAO0425_Run4_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CNAO0425_Run5_Config1.root,
+      ]
+      CNAO_1H: [  # name of input file(s)
+        /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CNAO0425_Run6_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CNAO0425_Run7_Config1.root,
+      ]
+      CYRCE_1H: [  # name of input file(s)
+        # /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CYRCE0425_Run1_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CYRCE0425_Run2_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CYRCE0425_Run3_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CYRCE0425_Run4_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/RealData/fit_result_CYRCE0425_Run5_Config1.root,
+      ]
+    hist_fitres: hFitResPl0Charge # histogram containing fit result info
+  simulation:
+    file:
+      CNAO_12C: [ # name of input file(s)
+        /Users/abigot/CLINM-AF/Calibration/FitResults/SimData/fit_result_sim_CNAO0425_Run01_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/SimData/fit_result_sim_CNAO0425_Run02_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/SimData/fit_result_sim_CNAO0425_Run03_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/SimData/fit_result_sim_CNAO0425_Run04_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/SimData/fit_result_sim_CNAO0425_Run05_Config1.root,
+      ]
+      CNAO_1H: [ # name of input file(s)
+        /Users/abigot/CLINM-AF/Calibration/FitResults/SimData/fit_result_sim_CNAO0425_Run06_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/SimData/fit_result_sim_CNAO0425_Run07_Config1.root
+      ]
+      CYRCE_1H: [ # name of input file(s)
+        # /Users/abigot/CLINM-AF/Calibration/FitResults/SimData/fit_result_sim_CYRCE0425_Run01_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/SimData/fit_result_sim_CYRCE0425_Run02_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/SimData/fit_result_sim_CYRCE0425_Run03_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/SimData/fit_result_sim_CYRCE0425_Run04_Config1.root,
+        /Users/abigot/CLINM-AF/Calibration/FitResults/SimData/fit_result_sim_CYRCE0425_Run05_Config1.root,
+      ]
+    hist_fitres: hFitResPlastic1Edep # histogram containing fit result info
+  bin_number:
+    mean: 5
+    sigma: 6
+
+graph:
+  name: Plastic1ChargesEdep
+  label:
+    xaxis: Plastic 1 E_{dep} (MeV)
+    yaxis: Plastic 1 Charge (mV.s)
+  limits:
+    xaxis: [0, 50]
+    yaxis: [0, 1500]
+  legend:
+    CNAO_12C: ^{12}C CNAO
+    CNAO_1H: ^{1}H CNAO
+    CYRCE_1H: ^{1}H CYRCe
+  color:
+    CNAO_12C: 633
+    CNAO_1H: 633
+    CYRCE_1H: 801
+  markerstyle:
+    CNAO_12C: 20
+    CNAO_1H: 21
+    CYRCE_1H: 21
+
+fit:
+  # range: [2, 45]
+  color: 862
+
+tlatex:
+  xmin: 0.55
+  ymax: 0.5
+
+output:
+  file: FitResults/Calibration/calib_result_Plastic1_Charge_p_and_C.root

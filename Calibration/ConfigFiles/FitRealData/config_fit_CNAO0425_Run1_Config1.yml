@@ -1,0 +1,93 @@
+input:
+  file: /Users/abigot/CLINM/Calibration/CNAO_0425/Run_01_Config1.root
+  tree:
+    name: tree
+    branches: [
+      pl0ntu.fPlAmplitude,
+      pl0ntu.fPlCharge,
+      pl1ntu.fPlAmplitude,
+      pl1ntu.fPlCharge
+    ]
+
+histogram_config:
+  name: [
+    Pl0Amplitude,
+    Pl0Charge,
+    Pl1Amplitude,
+    Pl1Charge
+  ]
+  nbin: [
+    200,
+    200,
+    200,
+    200
+  ]
+    
+fit:
+  range: [
+    [40, 120],
+    [700, 2100],
+    [70, 130],
+    [1400, 2400]
+  ]
+  pars:
+    MPV_landau: [
+      ["auto", 50, 90],
+      [1350, 1200, 1500],
+      [95, 85, 105],
+      [1800, 1700, 2000]
+    ]
+    sigma_landau: [
+      [3, 0.1, 100],
+      [5, 0.1, 1000],
+      [0.8, 0.1, 100],
+      [20, 0.1, 1000]
+    ]
+    mu_gauss: [
+      [0, -1, 6],
+      [0, -10, 150],
+      [0, -1, 15],
+      [0, -10, 150]
+    ]
+    sigma_gauss: [
+      [2, 0.3, 100],
+      [130, 0.3, 200],
+      [5, 0.3, 100],
+      [100, 0.3, 200]
+    ]
+    norm: [
+      [2000, 1.0, 1000000],
+      [20000, 1.0, 1000000],
+      [2000, 1.0, 1000000],
+      [20000, 1.0, 1000000]
+    ]
+
+output:
+  file: FitResults/RealData/fit_result_CNAO0425_Run1_Config1.root
+  plot:
+    activate: False
+    label: [
+      Amplitude of Plastic 1 (mV),
+      Charge of Plastic 1 (mV.s),
+      Amplitude of Plastic 2 (mV),
+      Charge of Plastic 2 (mV.s)
+    ]
+    ymin: [
+      0,
+      0,
+      0,
+      0
+    ]
+    ymax: [
+      "auto",
+      "auto",
+      "auto",
+      "auto"
+    ]
+    info:
+      exp: CLINM
+      campaign: CNAO April 2025
+      beam:
+        particle: ^{12}C
+        energy: 119.5 MeV/u
+      run: 1

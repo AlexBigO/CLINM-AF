@@ -1,7 +1,7 @@
 """
-file: fit.py
+file: fit_with_gauss.py
 brief: Script to fit amplitude and/or charge distributions of scintillators
-usage: python3 fit.py cfg.yml
+usage: python3 fit_with_gauss.py cfg.yml
 note:
 author: Alexandre BIGOT, alexandre.bigot@iphc.cnrs.fr
 """
@@ -74,8 +74,8 @@ IDX_TO_TEST = (
     None  # index of the distribution list to select when testing individual fits
 )
 
-NAME_PARS = ["MPV_landau", "sigma_landau", "mu_gauss", "sigma_gauss", "norm"]
-LABELS_HFIT_RES: list[str] = [
+NAME_PARS_GAUSS = ["mu_gauss", "sigma_gauss", "norm"]
+LABELS_HFIT_RES_GAUSS: list[str] = [
     "FitStatus",
     "Chi2OverNdf",
     "Xmin",
@@ -83,7 +83,18 @@ LABELS_HFIT_RES: list[str] = [
     "x_{MPV}",
     "#sigma_{MPV}",
     # "#rho_{#sigma_{l}, #sigma_{g}}",
-] + NAME_PARS
+] + NAME_PARS_GAUSS
+
+# NAME_PARS = ["MPV_landau", "sigma_landau", "mu_gauss", "sigma_gauss", "norm"]
+# LABELS_HFIT_RES: list[str] = [
+#     "FitStatus",
+#     "Chi2OverNdf",
+#     "Xmin",
+#     "Xmax",
+#     "x_{MPV}",
+#     "#sigma_{MPV}",
+#     "#rho_{#sigma_{l}, #sigma_{g}}",
+# ] + NAME_PARS
 
 
 def propagate_unc(sigma1: float, sigma2: float, rho12: float) -> float:
@@ -183,8 +194,6 @@ def main(name_config_file: str) -> None:
         init_par0,
         init_par1,
         init_par2,
-        init_par3,
-        init_par4,
         ymin_canvas,
         ymax_canvas,
     ) in enumerate(
@@ -194,11 +203,9 @@ def main(name_config_file: str) -> None:
             histogram_cfg["name"],
             histogram_cfg["nbin"],
             ranges_fit,
-            init_pars_fit[NAME_PARS[0]],
-            init_pars_fit[NAME_PARS[1]],
-            init_pars_fit[NAME_PARS[2]],
-            init_pars_fit[NAME_PARS[3]],
-            init_pars_fit[NAME_PARS[4]],
+            init_pars_fit[NAME_PARS_GAUSS[0]],
+            init_pars_fit[NAME_PARS_GAUSS[1]],
+            init_pars_fit[NAME_PARS_GAUSS[2]],
             config["output"]["plot"]["ymin"],
             config["output"]["plot"]["ymax"],
         )
@@ -225,76 +232,38 @@ def main(name_config_file: str) -> None:
         Logger(f"Start fit of {name_branch}\n", "INFO")
 
         data = df[name_branch].to_numpy()
-        mean = npmean(data)
-        std = npstd(data)
-
-        use_my_langaus = False
 
         x = r.RooRealVar(name_branch, f"x{i}", *range_fit)
-        # Set #bins to be used for FFT sampling to 10000
-        x.setBins(10000, "cache")
 
-        # x.setRange("fit_range", *range_fit)
         x.setBins(nbin)
 
         frame = x.frame()
 
         dataset = r.RooDataSet.from_numpy({name_branch: data}, [x])
 
-        # Construct landau(t,ml,sl)
-        if init_par0[0] == "auto":
-            ml = r.RooRealVar(NAME_PARS[0], NAME_PARS[0], mean, *init_par0[1:])
-        else:
-            ml = r.RooRealVar(NAME_PARS[0], NAME_PARS[0], *init_par0)
-        if init_par1[0] == "auto":
-            sl = r.RooRealVar(NAME_PARS[1], NAME_PARS[1], std, *init_par1[1:])
-        else:
-            sl = r.RooRealVar(NAME_PARS[1], NAME_PARS[1], *init_par1)
-        landau = r.RooLandau("lx", "lx", x, ml, sl)
-
         # Construct gauss(t,mg,sg)
-        mg = r.RooRealVar(NAME_PARS[2], NAME_PARS[2], *init_par2)
-        mg.setConstant(True)
-        sg = r.RooRealVar(NAME_PARS[3], NAME_PARS[3], *init_par3)
+        mg = r.RooRealVar(NAME_PARS_GAUSS[0], NAME_PARS_GAUSS[0], *init_par0)
+        sg = r.RooRealVar(NAME_PARS_GAUSS[1], NAME_PARS_GAUSS[1], *init_par1)
         gauss = r.RooGaussian("gauss", "gauss", x, mg, sg)
 
-        # Construct landau (x) gauss
-        lxg = r.RooFFTConvPdf("lxg", "landau (X) gauss", x, landau, gauss)
         # add norm
-        norm = r.RooRealVar(NAME_PARS[4], NAME_PARS[4], *init_par4)
-        model = r.RooAddPdf("model", "model", [lxg], [norm])
+        norm = r.RooRealVar(NAME_PARS_GAUSS[2], NAME_PARS_GAUSS[2], *init_par2)
 
-        # TODO
-        if use_my_langaus:
-            # func_langaus = r.TF1("func_langaus", langaufun, xmin, xmax, 4)
-            model = r.RooFormulaVar(
-                "func_langaus", langaufun, r.RooArgList(x, ml, sl, sg, norm)
-            )
+        model = r.RooAddPdf("model", "model", [gauss], [norm])
 
         fit_res = model.fitTo(
-            dataset, r.RooFit.NumCPU(1), Save=True
+            dataset, r.RooFit.NumCPU(10), Save=True
         )  # , Range="fit_range"        )
 
         hfit_correlation = fit_res.correlationHist()
         hfit_correlation.SetName(f"hFitCorrelation{name_data}")
         hfit_correlations.append(hfit_correlation)
 
-        corr_sl_sg = hfit_correlation.GetBinContent(
-            hfit_correlation.GetXaxis().FindBin("sigma_landau"),
-            hfit_correlation.GetYaxis().FindBin("sigma_gauss"),
-        )
-
         func_model = model.asTF(r.RooArgList(x))
         # get most probable value (MPV)
         x_mpv: float = func_model.GetMaximumX()
         # compute uncertainty on MPV by doing some weighted sum in quadrature
-        # s_mpv = propagate_unc(
-        #     fit_res.floatParsFinal().find("sigma_landau").getValV(),
-        #     fit_res.floatParsFinal().find("sigma_gauss").getValV(),
-        #     corr_sl_sg,
-        # )
-        # FIXME
-        s_mpv: float = fit_res.floatParsFinal().find("MPV_landau").getAsymErrorHi()
+        s_mpv = fit_res.floatParsFinal().find("mu_gauss").getAsymErrorHi()
 
         ##########
         # Plot
@@ -310,7 +279,7 @@ def main(name_config_file: str) -> None:
         title = f";{config['output']['plot']['label'][i]}; Entries;"
         c = configure_canvas(f"c_{i}", xmin, ymin, xmax, ymax, title)
         c.Update()
-        # c.Draw()
+        c.Draw()
         # c = r.TCanvas(f"c_{i}", "My TCanvas", 600, 600)
         dataset.plotOn(frame, MarkerStyle=r.kFullCircle)
         model.plotOn(frame, LineColor=r.kAzure + 4, LineWidth=2, MoveToBack=True)
@@ -321,18 +290,11 @@ def main(name_config_file: str) -> None:
         hfit_res = r.TH1D(
             f"hFitRes{name_data}",
             "",
-            len(LABELS_HFIT_RES),
+            len(LABELS_HFIT_RES_GAUSS),
             0,
-            len(LABELS_HFIT_RES) - 1,
+            len(LABELS_HFIT_RES_GAUSS) - 1,
         )
-        my_res = [
-            fit_res.status(),
-            frame.chiSquare(),
-            *range_fit,
-            x_mpv,
-            s_mpv,
-            # corr_sl_sg,
-        ]
+        my_res = [fit_res.status(), frame.chiSquare(), *range_fit, x_mpv, s_mpv]
 
         errors = [
             0,  # no error on fit status
@@ -341,19 +303,14 @@ def main(name_config_file: str) -> None:
             0,  # no error on xmax
             0,  # no error on x_mpv
             0,  # no error on s_mpv
-            # 0,  # no error on corr_sl_sg
         ]
 
-        for ipar, name_par in enumerate(NAME_PARS):
-            if ipar == 2:
-                my_res.append(0)
-                errors.append(0)
-                continue
+        for name_par in NAME_PARS_GAUSS:
             my_res.append(fit_res.floatParsFinal().find(name_par).getValV())
             errors.append(fit_res.floatParsFinal().find(name_par).getAsymErrorHi())
 
         for ilabel, (label, res, error) in enumerate(
-            zip(LABELS_HFIT_RES, my_res, errors)
+            zip(LABELS_HFIT_RES_GAUSS, my_res, errors)
         ):
             ibin = ilabel + 1
             hfit_res.GetXaxis().SetBinLabel(ibin, label)
@@ -365,12 +322,14 @@ def main(name_config_file: str) -> None:
         # add a legend
         if "Charge" in name_branch:
             leg = r.TLegend(padleftmargin + 0.45, 0.8, 0.87, 0.9)
-        else:
+        elif "Amplitude" in name_branch:
             leg = r.TLegend(padleftmargin + 0.53, 0.8, 0.87, 0.9)
+        else:
+            leg = r.TLegend(padleftmargin + 0.62, 0.8, 0.95, 0.9)
         leg.SetTextSize(0.035)
         leg.SetFillStyle(0)
         leg.AddEntry(dataset, "Data", "p")
-        leg.AddEntry(model, "Landau * Gauss", "l")
+        leg.AddEntry(model, "Gauss", "l")
 
         leg.Draw()
 
@@ -401,6 +360,8 @@ def main(name_config_file: str) -> None:
         xlatex_fitpars = (
             padleftmargin + 0.55 if "Amplitude" in name_branch else padleftmargin + 0.5
         )
+        if "EnergyDeposit" in name_branch:
+            xlatex_fitpars = padleftmargin + 0.56
         ylatex_fitpars_max = 0.75
         latex_fitpars.SetNDC()
         latex_fitpars.SetTextSize(0.03)
@@ -409,26 +370,26 @@ def main(name_config_file: str) -> None:
         latex_fitpars.DrawLatex(
             xlatex_fitpars, ylatex_fitpars_max, f"#chi^{{2}} / ndf = {my_res[1]:.2f}"
         )
-        latex_fitpars.DrawLatex(
-            xlatex_fitpars,
-            ylatex_fitpars_max - 0.05,
-            f"m_{{l}} = {my_res[6]:.3f} #pm {errors[6]:.3f}",
-        )
-        latex_fitpars.DrawLatex(
-            xlatex_fitpars,
-            ylatex_fitpars_max - 0.10,
-            f"#sigma_{{l}} = {my_res[7]:.3f} #pm {errors[7]:.3f}",
-        )
         # latex_fitpars.DrawLatex(
         #     xlatex_fitpars,
-        #     ylatex_fitpars_max - 0.15,
-        #     f"m_{{g}} = {my_res[7]:.3f} #pm {errors[7]:.3f}",
+        #     ylatex_fitpars_max - 0.05,
+        #     f"m_{{l}} = {my_res[5]:.3f} #pm {errors[5]:.3f}",
         # )
-        latex_fitpars.DrawLatex(
-            xlatex_fitpars,
-            ylatex_fitpars_max - 0.15,
-            f"#sigma_{{g}} = {my_res[9]:.3f} #pm {errors[9]:.3f}",
-        )
+        # latex_fitpars.DrawLatex(
+        #     xlatex_fitpars,
+        #     ylatex_fitpars_max - 0.05,
+        #     f"#sigma_{{l}} = {my_res[8]:.3f} #pm {errors[8]:.3f}",
+        # )
+        # # latex_fitpars.DrawLatex(
+        # #     xlatex_fitpars,
+        # #     ylatex_fitpars_max - 0.15,
+        # #     f"m_{{g}} = {my_res[7]:.3f} #pm {errors[7]:.3f}",
+        # # )
+        # latex_fitpars.DrawLatex(
+        #     xlatex_fitpars,
+        #     ylatex_fitpars_max - 0.10,
+        #     f"#sigma_{{g}} = {my_res[10]:.3f} #pm {errors[10]:.3f}",
+        # )
         # latex_fitpars.DrawLatex(
         #     xlatex_fitpars,
         #     ylatex_fitpars_max - 0.15,
@@ -436,12 +397,12 @@ def main(name_config_file: str) -> None:
         # )
         latex_fitpars.DrawLatex(
             xlatex_fitpars,
-            ylatex_fitpars_max - 0.20,
-            f"MPV = {my_res[4]:.3f} #pm {my_res[5]:.3f}",
+            ylatex_fitpars_max - 0.05,
+            f"MPV = {my_res[4]:.4f} #pm {my_res[5]:.4f}",
         )
 
         c.Update()
-        # c.Draw()
+        c.Draw()
         c.Write()
 
         if i == IDX_TO_TEST and IDX_TO_TEST is not None:

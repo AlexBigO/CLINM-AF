@@ -146,7 +146,7 @@ def main(name_config_file: str, debug: bool) -> None:
 
     cmd_merge = ""
     if merge_output:
-        cmd_merge += f"hadd {config['DecodeWC']['output']['name']} "
+        cmd_merge += f"hadd -f {config['DecodeWC']['output']['name']} "
         for name in name_output:
             cmd_merge += f"{name} "
 

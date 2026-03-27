@@ -6,15 +6,10 @@ note:
 author: Alexandre BIGOT, alexandre.bigot@iphc.cnrs.fr
 """
 
-import sys
-
 try:
     import ROOT as r
 except ModuleNotFoundError:
     print("Module 'root' is not installed. Please install it to run this script.")
-
-import pandas as pd
-import uproot
 
 
 def enforce_trailing_slash(path):

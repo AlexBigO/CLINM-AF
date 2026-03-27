@@ -1,0 +1,30 @@
+command:
+  print: False
+  run: True
+
+STIVI:
+  Reconstruction_dir: /scratch/ui11_2/FOOT/build/Reconstruction
+
+DecodeWC:
+  input: [
+    /work/desis/STIVI/dataWC/CNAO_0425/Run_01_Config1_Data_4_26_2025_Binary/Run_01_Config1_Data_4_26_2025_Binary.bin,
+    /work/desis/STIVI/dataWC/CNAO_0425/Run_01_Config1_Data_4_26_2025_Binary/Run_01_Config1_Data_4_26_2025_Binary_0001.bin,
+    /work/desis/STIVI/dataWC/CNAO_0425/Run_01_Config1_Data_4_26_2025_Binary/Run_01_Config1_Data_4_26_2025_Binary_0002.bin,
+    /work/desis/STIVI/dataWC/CNAO_0425/Run_01_Config1_Data_4_26_2025_Binary/Run_01_Config1_Data_4_26_2025_Binary_0003.bin,
+    /work/desis/STIVI/dataWC/CNAO_0425/Run_01_Config1_Data_4_26_2025_Binary/Run_01_Config1_Data_4_26_2025_Binary_0004.bin,
+    /work/desis/STIVI/dataWC/CNAO_0425/Run_01_Config1_Data_4_26_2025_Binary/Run_01_Config1_Data_4_26_2025_Binary_0005.bin,
+    /work/desis/STIVI/dataWC/CNAO_0425/Run_01_Config1_Data_4_26_2025_Binary/Run_01_Config1_Data_4_26_2025_Binary_0006.bin,
+    /work/desis/STIVI/dataWC/CNAO_0425/Run_01_Config1_Data_4_26_2025_Binary/Run_01_Config1_Data_4_26_2025_Binary_0007.bin,
+    /work/desis/STIVI/dataWC/CNAO_0425/Run_01_Config1_Data_4_26_2025_Binary/Run_01_Config1_Data_4_26_2025_Binary_0008.bin,
+    /work/desis/STIVI/dataWC/CNAO_0425/Run_01_Config1_Data_4_26_2025_Binary/Run_01_Config1_Data_4_26_2025_Binary_0009.bin  
+  ]
+  use_stivi_merge: False  # use the embedded option in STIVI to merge files in same directory 
+  output:
+    name: /work/desis/STIVI/dataWCDecoded/CNAO_0425_Decoded/CNAO0425_Run_01.root  # auto or file name
+    merge:
+      activate: True
+      rm_tmp_file: True  # remove temporary files
+  exp: CLINM2025
+  run: 01
+  flat: True # True or False
+  extra_option: "-rate -meas"

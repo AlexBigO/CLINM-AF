@@ -176,7 +176,16 @@ def main(name_config_file: str, debug: bool = False) -> None:
         # TODO add triple coincidence flag in the TTree (from cfg file)
 
         # compute kinetic energy before Pl1 and Pl2
-        df_with_ec = df.Define(
+        df_wo_nonsense = (
+            df.Filter(f"{name_dnrj_pl1} > 0")
+            .Filter(f"{name_dnrj_pl1} < 300")
+            .Filter(f"{name_dnrj_pl2} > 0")
+            .Filter(f"{name_dnrj_pl2} < 600")
+            # .Filter(f"{name_dnrj_cebr} < 180")
+            .Filter(f"{name_dnrj_cebr} > 0")
+        )
+
+        df_with_ec = df_wo_nonsense.Define(
             name_ec_pl2, f"{name_dnrj_cebr} + {name_dnrj_pl2}"
         ).Define(name_ec_pl1, f"{name_dnrj_cebr} + {name_dnrj_pl2} + {name_dnrj_pl1}")
 
@@ -189,12 +198,19 @@ def main(name_config_file: str, debug: bool = False) -> None:
         # QA histograms
         if do_qa:
 
-            h_names = ["h_cebr_pl2", "h_pl2_pl1", "h_ec_de_pl2", "h_ec_de_pl1"]
+            h_names = [
+                "h_cebr_pl2",
+                "h_pl2_pl1",
+                "h_ec_de_pl2",
+                "h_ec_de_pl1",
+                "h_cebr_pl1",
+            ]
             h_titles = [
                 "; CeBr_{3} energy (MeV); Plastic 2 energy (MeV)",
                 "; Plastic 2 energy (MeV); Plastic 1 energy (MeV)",
                 "; E_{c} before Plastic 2 (MeV); #Delta E Plastic 2(MeV)",
                 "; E_{c} before Plastic 1 (MeV); #Delta E Plastic 1(MeV)",
+                "; CeBr_{3} energy (MeV); Plastic 1 energy (MeV)",
             ]
 
             h_branches_to_plot = [
@@ -202,6 +218,7 @@ def main(name_config_file: str, debug: bool = False) -> None:
                 (name_dnrj_pl2, name_dnrj_pl1),
                 [name_ec_pl2, name_dnrj_pl2],
                 [name_ec_pl1, name_dnrj_pl1],
+                (name_dnrj_cebr, name_dnrj_pl1),
             ]
 
             # retrieve mins and maxs of each distribution
@@ -226,6 +243,7 @@ def main(name_config_file: str, debug: bool = False) -> None:
             h2 = df_new.Histo2D(h_configs[1], *h_branches_to_plot[1])
             h3 = df_new.Histo2D(h_configs[2], *h_branches_to_plot[2])
             h4 = df_new.Histo2D(h_configs[3], *h_branches_to_plot[3])
+            h5 = df_new.Histo2D(h_configs[4], *h_branches_to_plot[4])
 
         # save dataframe in output .root file
         if config["output"]["save_nrj_info_only"]:
@@ -243,6 +261,7 @@ def main(name_config_file: str, debug: bool = False) -> None:
             h2.Write()
             h3.Write()
             h4.Write()
+            h5.Write()
             outfile.Close()
 
 

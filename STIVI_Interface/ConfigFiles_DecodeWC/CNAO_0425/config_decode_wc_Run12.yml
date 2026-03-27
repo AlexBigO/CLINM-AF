@@ -1,0 +1,21 @@
+command:
+  print: True
+  run: False
+
+STIVI:
+  Reconstruction_dir: /scratch/ui11_2/FOOT/build/Reconstruction
+
+DecodeWC:
+  input: [
+    /work/desis/STIVI/dataWC/CNAO_0425/Run_12_Config1_Data_4_26_2025_Binary/Run_12_Config1_Data_4_26_2025_Binary.bin  
+  ]
+  use_stivi_merge: False  # use the embedded option in STIVI to merge files in same directory 
+  output:
+    name: /work/desis/STIVI/dataWCDecoded/CNAO_0425_Decoded/CNAO0425_Run_12.root  # auto or file name
+    merge:
+      activate: True
+      rm_tmp_file: True  # remove temporary files
+  exp: CLINM2025
+  run: 12
+  flat: True # True or False
+  extra_option: "-rate -meas -noise 48 80"

@@ -1,0 +1,37 @@
+input:
+  file: [  # a single input file or a list of input files
+    /work/desis/STIVI/dataWCDecoded/CNAO_0425_Decoded/CNAO0425_Run_11.root
+  ]
+  tree:
+    name: tree
+    DeltaE_branches: [
+      "pl0ntu.fPlAmplitude",  # Plastic 1
+      "pl1ntu.fPlAmplitude",  # Plastic 2
+      "ce0ntu.fCeAmplitude"   # CeBr
+    ]
+
+output:
+  dir: /work/desis/STIVI/dataWCDecoded/CNAO_0425_Decoded  # output directory (if sub_dir is not activated)
+  sub_dir:
+    activate: False  # take the file name for the sub dir name (overwrites option 'file' below)
+    name_file: rawData.root  # default name of a file in sub dir if sub_dir enabled
+  file: [  # a single output file or a list of output files
+    CNAO0425_Run_11_post_processed.root
+  ]
+  tree:
+    name: tree
+    DeltaE_branches_renaming: [
+      "fDeltaEPl1",  # Plastic 1
+      "fDeltaEPl2",  # Plastic 2
+      "fDeltaECebr"  # CeBr
+    ]
+    ec_branches:  # new branches with kinetic energy
+      ec_pl1: fEcBeforePl1
+      ec_pl2: fEcBeforePl2
+  qa:
+    activate: True  # add QA plots to the output file
+    nbins: 512  # number of bins for QA histograms
+  save_nrj_info_only: true # switch to save only energy information
+
+RDataFrame:
+  EnableImplicitMT: 6

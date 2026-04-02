@@ -192,6 +192,8 @@ def set_actors(sim: gate.Simulation, name_ofile: str):
         "PostPosition",
         "PreStepUniqueVolumeID",
         "GlobalTime",
+        "ParticleName",
+        "PDGCode",
     ]
 
     digi_adder_policy: str = "EnergyWeightedCentroidPosition"
@@ -231,20 +233,20 @@ def set_actors(sim: gate.Simulation, name_ofile: str):
     hits_adder_cebr.output_filename = name_ofile
     hits_adder_cebr.policy = digi_adder_policy
 
-    # phase space actor (to access MC truth)
-    phsp = sim.add_actor("PhaseSpaceActor", name="Phsp")
-    phsp.attached_to = "Plastic1"
-    phsp.attributes = [
-        "KineticEnergy",
-        "RunID",
-        "PostPosition",
-        "PrePosition",
-        "EventID",
-        "TrackID",
-        "ParticleName",  # for Z
-        "PDGCode",  # for Z (but better)
-    ]
-    phsp.output_filename = name_ofile
+    # # phase space actor (to access MC truth)
+    # phsp = sim.add_actor("PhaseSpaceActor", name="Phsp")
+    # phsp.attached_to = "Plastic1"
+    # phsp.attributes = [
+    #     "KineticEnergy",
+    #     "RunID",
+    #     "PostPosition",
+    #     "PrePosition",
+    #     "EventID",
+    #     "TrackID",
+    #     "ParticleName",  # for Z
+    #     "PDGCode",  # for Z (but better)
+    # ]
+    # phsp.output_filename = name_ofile
 
 
 # pylint:disable=too-many-locals,too-many-statements, too-many-branches
@@ -346,8 +348,8 @@ def main(name_config_file: str, debug: bool) -> None:
         "Plastic2": [6 * CM, 6 * CM, 4 * MM],
         "BlackTapeAfterPl2": [6 * CM, 6 * CM, 0.2 * MM],
         "WindowCebr": [0, 51 * MM, 53.8 * MM],  # Dmin, Dmax, H for Tubs
-        "ReflCebr": [0, 51 * MM, 53 * MM],  # Dmin, Dmax, H for Tubs
-        "Cebr": [0, 51 * MM, 51 * MM],  # Dmin, Dmax, H for Tubs
+        "ReflCebr": [0, 50.8 * MM, 53 * MM],  # Dmin, Dmax, H for Tubs
+        "Cebr": [0, 50.6 * MM, 51 * MM],  # Dmin, Dmax, H for Tubs
     }
     # define reference frame of each volume (for positions only!)
     # it does not affect the mother

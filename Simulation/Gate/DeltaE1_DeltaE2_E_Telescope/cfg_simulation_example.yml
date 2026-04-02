@@ -1,5 +1,5 @@
 visu:
-  activate: True
+  activate: False
   type: qt
 
 multithreading:
@@ -12,7 +12,7 @@ source:
   energy_spectrum:  # type "gauss"
     mean: 119.5 # in MeV/u
     sigma: 0.1 # in MeV
-  n: 10
+  n: 1000
 
 target:
   material: PMMA

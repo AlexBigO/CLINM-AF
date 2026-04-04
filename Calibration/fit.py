@@ -81,8 +81,8 @@ LABELS_HFIT_RES: list[str] = [
     "Xmin",
     "Xmax",
     "x_{MPV}",
-    "#sigma_{MPV}",
-    # "#rho_{#sigma_{l}, #sigma_{g}}",
+    # "#sigma_{MPV}",
+    "#sigma_{l.g}",
 ] + NAME_PARS
 
 
@@ -295,6 +295,11 @@ def main(name_config_file: str) -> None:
             fit_res.floatParsFinal().find(f"sigma_gauss_{i}").getValV(),
             corr_sl_sg,
         )
+        unc_sigma_lxg: float = propagate_unc(
+            fit_res.floatParsFinal().find(f"sigma_landau_{i}").getAsymErrorHi(),
+            fit_res.floatParsFinal().find(f"sigma_gauss_{i}").getAsymErrorHi(),
+            corr_sl_sg,
+        )
         # FIXME
         s_mpv: float = (
             fit_res.floatParsFinal().find(f"{NAME_PARS[0]}_{i}").getAsymErrorHi()
@@ -334,8 +339,8 @@ def main(name_config_file: str) -> None:
             frame.chiSquare(),
             *range_fit,
             x_mpv,
-            s_mpv,
-            # corr_sl_sg,
+            # s_mpv,
+            sigma_lxg,
         ]
 
         errors = [
@@ -343,9 +348,9 @@ def main(name_config_file: str) -> None:
             0,  # no error on chi2
             0,  # no error on xmin
             0,  # no error on xmax
-            0,  # no error on x_mpv
-            0,  # no error on s_mpv
-            # 0,  # no error on corr_sl_sg
+            s_mpv,  # no error on x_mpv
+            # 0,  # no error on s_mpv
+            unc_sigma_lxg,
         ]
 
         for ipar, name_par in enumerate(NAME_PARS):

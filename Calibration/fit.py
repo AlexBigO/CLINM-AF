@@ -81,8 +81,8 @@ LABELS_HFIT_RES: list[str] = [
     "Xmin",
     "Xmax",
     "x_{MPV}",
-    "#sigma_{MPV}",
-    # "#rho_{#sigma_{l}, #sigma_{g}}",
+    # "#sigma_{MPV}",
+    "#sigma_{l.g}",
 ] + NAME_PARS
 
 
@@ -163,9 +163,11 @@ def main(name_config_file: str) -> None:
     outfile: r.TFile = r.TFile(name_outfile, "recreate")
     for hist in hists:
         hist.Write()
+    outfile.Close()
 
     hfit_results = []
     hfit_correlations = []
+    canvases = []
 
     exp: str = config["output"]["plot"]["info"]["exp"]
     campaign: str = config["output"]["plot"]["info"]["campaign"]
@@ -243,32 +245,32 @@ def main(name_config_file: str) -> None:
 
         # Construct landau(t,ml,sl)
         if init_par0[0] == "auto":
-            ml = r.RooRealVar(NAME_PARS[0], NAME_PARS[0], mean, *init_par0[1:])
+            ml = r.RooRealVar(f"{NAME_PARS[0]}_{i}", NAME_PARS[0], mean, *init_par0[1:])
         else:
-            ml = r.RooRealVar(NAME_PARS[0], NAME_PARS[0], *init_par0)
+            ml = r.RooRealVar(f"{NAME_PARS[0]}_{i}", NAME_PARS[0], *init_par0)
         if init_par1[0] == "auto":
-            sl = r.RooRealVar(NAME_PARS[1], NAME_PARS[1], std, *init_par1[1:])
+            sl = r.RooRealVar(f"{NAME_PARS[1]}_{i}", NAME_PARS[1], std, *init_par1[1:])
         else:
-            sl = r.RooRealVar(NAME_PARS[1], NAME_PARS[1], *init_par1)
+            sl = r.RooRealVar(f"{NAME_PARS[1]}_{i}", NAME_PARS[1], *init_par1)
         landau = r.RooLandau("lx", "lx", x, ml, sl)
 
         # Construct gauss(t,mg,sg)
-        mg = r.RooRealVar(NAME_PARS[2], NAME_PARS[2], *init_par2)
+        mg = r.RooRealVar(f"{NAME_PARS[2]}_{i}", NAME_PARS[2], *init_par2)
         mg.setConstant(True)
-        sg = r.RooRealVar(NAME_PARS[3], NAME_PARS[3], *init_par3)
-        gauss = r.RooGaussian("gauss", "gauss", x, mg, sg)
+        sg = r.RooRealVar(f"{NAME_PARS[3]}_{i}", NAME_PARS[3], *init_par3)
+        gauss = r.RooGaussian(f"gauss_{i}", "gauss", x, mg, sg)
 
         # Construct landau (x) gauss
-        lxg = r.RooFFTConvPdf("lxg", "landau (X) gauss", x, landau, gauss)
+        lxg = r.RooFFTConvPdf(f"lxg_{i}", "landau (X) gauss", x, landau, gauss)
         # add norm
-        norm = r.RooRealVar(NAME_PARS[4], NAME_PARS[4], *init_par4)
-        model = r.RooAddPdf("model", "model", [lxg], [norm])
+        norm = r.RooRealVar(f"{NAME_PARS[4]}_{i}", NAME_PARS[4], *init_par4)
+        model = r.RooAddPdf(f"model_{i}", "model", [lxg], [norm])
 
         # TODO
         if use_my_langaus:
             # func_langaus = r.TF1("func_langaus", langaufun, xmin, xmax, 4)
             model = r.RooFormulaVar(
-                "func_langaus", langaufun, r.RooArgList(x, ml, sl, sg, norm)
+                f"func_langaus_{i}", langaufun, r.RooArgList(x, ml, sl, sg, norm)
             )
 
         fit_res = model.fitTo(
@@ -288,13 +290,20 @@ def main(name_config_file: str) -> None:
         # get most probable value (MPV)
         x_mpv: float = func_model.GetMaximumX()
         # compute uncertainty on MPV by doing some weighted sum in quadrature
-        # s_mpv = propagate_unc(
-        #     fit_res.floatParsFinal().find("sigma_landau").getValV(),
-        #     fit_res.floatParsFinal().find("sigma_gauss").getValV(),
-        #     corr_sl_sg,
-        # )
+        sigma_lxg: float = propagate_unc(
+            fit_res.floatParsFinal().find(f"sigma_landau_{i}").getValV(),
+            fit_res.floatParsFinal().find(f"sigma_gauss_{i}").getValV(),
+            corr_sl_sg,
+        )
+        unc_sigma_lxg: float = propagate_unc(
+            fit_res.floatParsFinal().find(f"sigma_landau_{i}").getAsymErrorHi(),
+            fit_res.floatParsFinal().find(f"sigma_gauss_{i}").getAsymErrorHi(),
+            corr_sl_sg,
+        )
         # FIXME
-        s_mpv: float = fit_res.floatParsFinal().find("MPV_landau").getAsymErrorHi()
+        s_mpv: float = (
+            fit_res.floatParsFinal().find(f"{NAME_PARS[0]}_{i}").getAsymErrorHi()
+        )
 
         ##########
         # Plot
@@ -330,8 +339,8 @@ def main(name_config_file: str) -> None:
             frame.chiSquare(),
             *range_fit,
             x_mpv,
-            s_mpv,
-            # corr_sl_sg,
+            # s_mpv,
+            sigma_lxg,
         ]
 
         errors = [
@@ -339,9 +348,9 @@ def main(name_config_file: str) -> None:
             0,  # no error on chi2
             0,  # no error on xmin
             0,  # no error on xmax
-            0,  # no error on x_mpv
-            0,  # no error on s_mpv
-            # 0,  # no error on corr_sl_sg
+            s_mpv,  # no error on x_mpv
+            # 0,  # no error on s_mpv
+            unc_sigma_lxg,
         ]
 
         for ipar, name_par in enumerate(NAME_PARS):
@@ -349,6 +358,7 @@ def main(name_config_file: str) -> None:
                 my_res.append(0)
                 errors.append(0)
                 continue
+            name_par += f"_{i}"
             my_res.append(fit_res.floatParsFinal().find(name_par).getValV())
             errors.append(fit_res.floatParsFinal().find(name_par).getAsymErrorHi())
 
@@ -429,21 +439,46 @@ def main(name_config_file: str) -> None:
             ylatex_fitpars_max - 0.15,
             f"#sigma_{{g}} = {my_res[9]:.3f} #pm {errors[9]:.3f}",
         )
-        # latex_fitpars.DrawLatex(
-        #     xlatex_fitpars,
-        #     ylatex_fitpars_max - 0.15,
-        #     f"#rho_{{ #sigma_{{l}} #sigma_{{ g }} }} = {my_res[6]:.3f}",
-        # )
         latex_fitpars.DrawLatex(
             xlatex_fitpars,
             ylatex_fitpars_max - 0.20,
             f"MPV = {my_res[4]:.3f} #pm {my_res[5]:.3f}",
         )
+        latex_fitpars.DrawLatex(
+            xlatex_fitpars,
+            ylatex_fitpars_max - 0.25,
+            f"#sigma_{{l #times g}} = {sigma_lxg:.3f}",
+        )
 
         c.Update()
         # c.Draw()
-        c.Write()
+        # c.Write()
+        canvases.append(c)
 
+        # if i == IDX_TO_TEST and IDX_TO_TEST is not None:
+        #     c.Print(name_pdf_outfile)
+        #     continue
+
+        # if len(name_branches) == 1:
+        #     c.Print(name_pdf_outfile)
+        # else:
+        #     if i == 0:
+        #         c.Print(f"{name_pdf_outfile}(")
+        #     elif i == len(name_branches) - 1:
+        #         c.Print(f"{name_pdf_outfile})")
+        #     else:
+        #         c.Print(name_pdf_outfile)
+
+    # save in output file
+    outfile: r.TFile = r.TFile(name_outfile, "update")
+    for c in canvases:
+        c.Write()
+    for hfit_res, hfit_correlation in zip(hfit_results, hfit_correlations):
+        hfit_res.Write()
+        hfit_correlation.Write()
+    outfile.Close()
+
+    for i, c in enumerate(canvases):
         if i == IDX_TO_TEST and IDX_TO_TEST is not None:
             c.Print(name_pdf_outfile)
             continue
@@ -457,12 +492,6 @@ def main(name_config_file: str) -> None:
                 c.Print(f"{name_pdf_outfile})")
             else:
                 c.Print(name_pdf_outfile)
-
-    # save in output file
-    for hfit_res, hfit_correlation in zip(hfit_results, hfit_correlations):
-        hfit_res.Write()
-        hfit_correlation.Write()
-    outfile.Close()
 
 
 if __name__ == "__main__":

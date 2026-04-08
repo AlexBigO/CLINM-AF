@@ -275,12 +275,7 @@ def main(name_config_file: str, debug: bool) -> None:
     config_source: dict = config["source"]
     # target
     has_target: bool = config["target"]["exists"]
-    material_target: str = "G4_Galactic"  # default config for no target
-    size_target: list[float] = [
-        0.1 * MM,
-        0.1 * MM,
-        0.1 * MM,
-    ]  # default config for no target
+
     if has_target:
         material_target = config["target"]["material"]
         size_target = [s * CM for s in config["target"]["size"]]
@@ -301,13 +296,9 @@ def main(name_config_file: str, debug: bool) -> None:
     run = config["run"]
     # output
     dir_output: str = config["output"]["dir"]
-    name_ofile: str = (
-        f"{campaign}_Run{run}_{config_source['particle']}_on_{material_target}_MC.root"
-    )
-    if not has_target:
-        name_ofile = (
-            f"{campaign}_Run{run}_{config_source['particle']}_wo_target_MC.root"
-        )
+    name_ofile = f"{campaign}_Run{run}_{config_source['particle']}_wo_target_MC.root"
+    if has_target:
+        name_ofile = f"{campaign}_Run{run}_{config_source['particle']}_on_{material_target}_MC.root"
 
     # create simulation object
     sim: gate.Simulation = gate.Simulation()

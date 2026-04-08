@@ -582,7 +582,7 @@ def main(name_config_file: str, debug: bool) -> None:
     if has_target:
         set_source(sim, config_source, dist_source_target, nthreads)
     else:
-        dist_source_pl1: float | None = config["distances"]["source_plastic1"]
+        dist_source_pl1: float | None = config["distances"]["source_plastic1"] * CM
         if dist_source_pl1 is None:
             Logger("'source_plastic1' distance must be not null if no target!", "FATAL")
         set_source(sim, config_source, dist_source_pl1, nthreads)

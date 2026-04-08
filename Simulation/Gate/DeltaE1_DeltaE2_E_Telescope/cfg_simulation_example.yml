@@ -1,5 +1,5 @@
 visu:
-  activate: False
+  activate: True
   type: qt
 
 multithreading:
@@ -12,20 +12,22 @@ source:
   energy_spectrum:  # type "gauss"
     mean: 119.5 # in MeV/u
     sigma: 0.1 # in MeV
-  n: 1000
+  n: 10
 
 target:
+  exists: True # False if no target (e.g. calibration run)
   material: PMMA
   size: [10, 10, 0.3] # in cm
 
 distances:  # these are edge-to-edge distances!
   source_target: 20  # in cm
   target_plastic1: 126.5  # in cm
+  source_plastic1: 20 # in cm; null if there is a target
   plastic1_plastic2: 4.  # in cm
   plastic2_cebr: 3. # in cm
 
 telescope:
-  angle: null #6.4  # in degrees; possibilities: any float, null for angle of 0°
+  angle: 0 #6.4  # in degrees; possibilities: any float, null for angle of 0°
 
 campaign: Test
 run: "Test"

@@ -6,6 +6,8 @@ note:
 author: Alexandre BIGOT, alexandre.bigot@iphc.cnrs.fr
 """
 
+import sys
+
 try:
     import numpy as np
 except ModuleNotFoundError:
@@ -31,6 +33,13 @@ try:
 except ModuleNotFoundError:
     print("Module 'opengate' is not installed. Please install it to run this script.")
 
+try:
+    sys.path.append("../../../Utils/")
+    from logger import Logger
+except ModuleNotFoundError:
+    print(
+        "Module 'logger' is not in the '../../../Utils/' directory. Add it to run this script."
+    )
 
 # units
 MM = gate.g4_units.mm
@@ -265,11 +274,22 @@ def main(name_config_file: str, debug: bool) -> None:
     # source
     config_source: dict = config["source"]
     # target
-    material_target: str = config["target"]["material"]
-    size_target: list[float] = [s * CM for s in config["target"]["size"]]
+    has_target: bool = config["target"]["exists"]
+    material_target: str = "G4_Galactic"  # default config for no target
+    size_target: list[float] = [
+        0.1 * MM,
+        0.1 * MM,
+        0.1 * MM,
+    ]  # default config for no target
+    if has_target:
+        material_target = config["target"]["material"]
+        size_target = [s * CM for s in config["target"]["size"]]
     # distances
-    dist_source_target: float = config["distances"]["source_target"] * CM
-    dist_target_pl1: float = config["distances"]["target_plastic1"] * CM
+    dist_source_target: float | None = None
+    dist_target_pl1: float | None = None
+    if has_target:
+        dist_source_target = config["distances"]["source_target"] * CM
+        dist_target_pl1 = config["distances"]["target_plastic1"] * CM
     dist_pl1_pl2: float = config["distances"]["plastic1_plastic2"] * CM
     dist_pl2_cebr: float = config["distances"]["plastic2_cebr"] * CM
     # telescope
@@ -284,6 +304,10 @@ def main(name_config_file: str, debug: bool) -> None:
     name_ofile: str = (
         f"{campaign}_Run{run}_{config_source['particle']}_on_{material_target}_MC.root"
     )
+    if not has_target:
+        name_ofile = (
+            f"{campaign}_Run{run}_{config_source['particle']}_wo_target_MC.root"
+        )
 
     # create simulation object
     sim: gate.Simulation = gate.Simulation()
@@ -311,89 +335,140 @@ def main(name_config_file: str, debug: bool) -> None:
     # names
     names: dict = {
         NAME_WORLD: None,
-        "Target": "Target",
-        "BlackTapeBeforePl1": "BlackTapeBeforePl1",
-        "Plastic1": "Plastic1",
-        "BlackTapeAfterPl1": "BlackTapeAfterPl1",
-        "BlackTapeBeforePl2": "BlackTapeBeforePl2",
-        "Plastic2": "Plastic2",
-        "BlackTapeAfterPl2": "BlackTapeAfterPl2",
-        "WindowCebr": "WindowCebr",
-        "ReflCebr": "ReflCebr",
-        "Cebr": "Cebr",
     }
+
+    if has_target:
+        names.update({"Target": "Target"})
+
+    names.update(
+        {
+            "BlackTapeBeforePl1": "BlackTapeBeforePl1",
+            "Plastic1": "Plastic1",
+            "BlackTapeAfterPl1": "BlackTapeAfterPl1",
+            "BlackTapeBeforePl2": "BlackTapeBeforePl2",
+            "Plastic2": "Plastic2",
+            "BlackTapeAfterPl2": "BlackTapeAfterPl2",
+            "WindowCebr": "WindowCebr",
+            "ReflCebr": "ReflCebr",
+            "Cebr": "Cebr",
+        }
+    )
+
     # sizes
     sizes: dict = {
         NAME_WORLD: [3 * M, 3 * M, 6 * M],
-        "Target": size_target,
-        "BlackTapeBeforePl1": [6 * CM, 6 * CM, 0.2 * MM],
-        "Plastic1": [6 * CM, 6 * CM, 2 * MM],
-        "BlackTapeAfterPl1": [6 * CM, 6 * CM, 0.2 * MM],
-        "BlackTapeBeforePl2": [6 * CM, 6 * CM, 0.2 * MM],
-        "Plastic2": [6 * CM, 6 * CM, 4 * MM],
-        "BlackTapeAfterPl2": [6 * CM, 6 * CM, 0.2 * MM],
-        "WindowCebr": [0, 51 * MM, 53.8 * MM],  # Dmin, Dmax, H for Tubs
-        "ReflCebr": [0, 50.8 * MM, 53 * MM],  # Dmin, Dmax, H for Tubs
-        "Cebr": [0, 50.6 * MM, 51 * MM],  # Dmin, Dmax, H for Tubs
     }
+    if has_target:
+        sizes.update({"Target": size_target})
+    sizes.update(
+        {
+            "BlackTapeBeforePl1": [6 * CM, 6 * CM, 0.2 * MM],
+            "Plastic1": [6 * CM, 6 * CM, 2 * MM],
+            "BlackTapeAfterPl1": [6 * CM, 6 * CM, 0.2 * MM],
+            "BlackTapeBeforePl2": [6 * CM, 6 * CM, 0.2 * MM],
+            "Plastic2": [6 * CM, 6 * CM, 4 * MM],
+            "BlackTapeAfterPl2": [6 * CM, 6 * CM, 0.2 * MM],
+            "WindowCebr": [0, 51 * MM, 53.8 * MM],  # Dmin, Dmax, H for Tubs
+            "ReflCebr": [0, 50.8 * MM, 53 * MM],  # Dmin, Dmax, H for Tubs
+            "Cebr": [0, 50.6 * MM, 51 * MM],  # Dmin, Dmax, H for Tubs
+        }
+    )
     # define reference frame of each volume (for positions only!)
     # it does not affect the mother
     ref_frames: dict = {
         NAME_WORLD: None,
-        "Target": NAME_WORLD,
-        "BlackTapeBeforePl1": "Target",
-        "Plastic1": "BlackTapeBeforePl1",
-        "BlackTapeAfterPl1": "Plastic1",
-        "BlackTapeBeforePl2": "BlackTapeAfterPl1",
-        "Plastic2": "BlackTapeBeforePl2",
-        "BlackTapeAfterPl2": "Plastic2",
-        "WindowCebr": "BlackTapeAfterPl2",
-        "ReflCebr": "WindowCebr",
-        "Cebr": "ReflCebr",
     }
+    if has_target:
+        ref_frames.update(
+            {
+                "Target": NAME_WORLD,
+                "BlackTapeBeforePl1": "Target",
+            }
+        )
+    else:
+        ref_frames.update({"BlackTapeBeforePl1": NAME_WORLD})
+
+    ref_frames.update(
+        {
+            "Plastic1": "BlackTapeBeforePl1",
+            "BlackTapeAfterPl1": "Plastic1",
+            "BlackTapeBeforePl2": "BlackTapeAfterPl1",
+            "Plastic2": "BlackTapeBeforePl2",
+            "BlackTapeAfterPl2": "Plastic2",
+            "WindowCebr": "BlackTapeAfterPl2",
+            "ReflCebr": "WindowCebr",
+            "Cebr": "ReflCebr",
+        }
+    )
+
     # positions
     # CAREFUL: the distances filled are edge-to-edge, this will require a correction later on
     positions: dict = {
         NAME_WORLD: [0, 0, 0],
-        "Target": [0, 0, 0.5 * sizes["Target"][IDZ]],
-        "BlackTapeBeforePl1": [0, 0, dist_target_pl1],  # in Target frame
-        "Plastic1": [0, 0, 0],  # in BlackTapeBeforePl1 frame
-        "BlackTapeAfterPl1": [0, 0, 0],  # in Plastic1 frame
-        "BlackTapeBeforePl2": [0, 0, dist_pl1_pl2],  # in BlackTapeAfterPl1 frame
-        "Plastic2": [0, 0, 0],  # in BlackTapeBeforePl2 frame
-        "BlackTapeAfterPl2": [0, 0, 0],  # in Plastic2 frame
-        "WindowCebr": [0, 0, dist_pl2_cebr],  # in BlackTapeAfterPl2 frame
-        "ReflCebr": [0, 0, 0],  # in WindowCebr frame
-        "Cebr": [0, 0, 0],  # in ReflCebr frame
     }
+
+    if has_target:
+        positions.update(
+            {
+                "Target": [0, 0, 0.5 * sizes["Target"][IDZ]],
+                "BlackTapeBeforePl1": [0, 0, dist_target_pl1],  # in Target frame
+            }
+        )
+    else:
+        positions.update(
+            {"BlackTapeBeforePl1": [0, 0, 0.5 * sizes["BlackTapeBeforePl1"][IDZ]]}
+        )  # in world frame
+
+    positions.update(
+        {
+            "Plastic1": [0, 0, 0],  # in BlackTapeBeforePl1 frame
+            "BlackTapeAfterPl1": [0, 0, 0],  # in Plastic1 frame
+            "BlackTapeBeforePl2": [0, 0, dist_pl1_pl2],  # in BlackTapeAfterPl1 frame
+            "Plastic2": [0, 0, 0],  # in BlackTapeBeforePl2 frame
+            "BlackTapeAfterPl2": [0, 0, 0],  # in Plastic2 frame
+            "WindowCebr": [0, 0, dist_pl2_cebr],  # in BlackTapeAfterPl2 frame
+            "ReflCebr": [0, 0, 0],  # in WindowCebr frame
+            "Cebr": [0, 0, 0],  # in ReflCebr frame
+        }
+    )
 
     mothers: dict = {
         NAME_WORLD: None,
-        "Target": NAME_WORLD,
-        "BlackTapeBeforePl1": NAME_WORLD,
-        "Plastic1": NAME_WORLD,
-        "BlackTapeAfterPl1": NAME_WORLD,
-        "BlackTapeBeforePl2": NAME_WORLD,
-        "Plastic2": NAME_WORLD,
-        "BlackTapeAfterPl2": NAME_WORLD,
-        "WindowCebr": NAME_WORLD,
-        "ReflCebr": "WindowCebr",
-        "Cebr": "ReflCebr",
     }
+    if has_target:
+        mothers.update({"Target": NAME_WORLD})
+    mothers.update(
+        {
+            "BlackTapeBeforePl1": NAME_WORLD,
+            "Plastic1": NAME_WORLD,
+            "BlackTapeAfterPl1": NAME_WORLD,
+            "BlackTapeBeforePl2": NAME_WORLD,
+            "Plastic2": NAME_WORLD,
+            "BlackTapeAfterPl2": NAME_WORLD,
+            "WindowCebr": NAME_WORLD,
+            "ReflCebr": "WindowCebr",
+            "Cebr": "ReflCebr",
+        }
+    )
 
     colors: dict = {
         NAME_WORLD: None,
-        "Target": RED,
-        "BlackTapeBeforePl1": GREEN,
-        "Plastic1": BLUE,
-        "BlackTapeAfterPl1": YELLOW,
-        "BlackTapeBeforePl2": GREEN,
-        "Plastic2": BLUE,
-        "BlackTapeAfterPl2": YELLOW,
-        "WindowCebr": None,
-        "ReflCebr": None,
-        "Cebr": None,
     }
+    if has_target:
+        colors.update({"Target": RED})
+    colors.update(
+        {
+            "BlackTapeBeforePl1": GREEN,
+            "Plastic1": BLUE,
+            "BlackTapeAfterPl1": YELLOW,
+            "BlackTapeBeforePl2": GREEN,
+            "Plastic2": BLUE,
+            "BlackTapeAfterPl2": YELLOW,
+            "WindowCebr": None,
+            "ReflCebr": None,
+            "Cebr": None,
+        }
+    )
 
     # correct distance in world frame
     for (key, ref), (_, mother) in zip(ref_frames.items(), mothers.items()):
@@ -406,38 +481,50 @@ def main(name_config_file: str, debug: bool) -> None:
             # distance from edge to edge and not center to center
             if idx == IDZ:
                 positions[key][idx] += 0.5 * sizes[key][IDZ]
-                if key != "Target":
+                if has_target and key != "Target":
+                    positions[key][idx] += 0.5 * sizes[ref][IDZ]
+                if not has_target and key != "BlackTapeBeforePl1":
                     positions[key][idx] += 0.5 * sizes[ref][IDZ]
 
     # materials
     materials: dict = {
         NAME_WORLD: "G4_Galactic",  # approximation to void
-        "Target": material_target,
-        "Plastic1": "G4_PLASTIC_SC_VINYLTOLUENE",
-        "BlackTapeBeforePl1": "G4_POLYVINYL_CHLORIDE",
-        "BlackTapeAfterPl1": "G4_POLYVINYL_CHLORIDE",
-        "BlackTapeBeforePl2": "G4_POLYVINYL_CHLORIDE",
-        "Plastic2": "G4_PLASTIC_SC_VINYLTOLUENE",
-        "BlackTapeAfterPl2": "G4_POLYVINYL_CHLORIDE",
-        "WindowCebr": "G4_Al",
-        "ReflCebr": "G4_TEFLON",
-        "Cebr": "CeBr3",
     }
+    if has_target:
+        materials.update({"Target": material_target})
+    materials.update(
+        {
+            "BlackTapeBeforePl1": "G4_POLYVINYL_CHLORIDE",
+            "Plastic1": "G4_PLASTIC_SC_VINYLTOLUENE",
+            "BlackTapeAfterPl1": "G4_POLYVINYL_CHLORIDE",
+            "BlackTapeBeforePl2": "G4_POLYVINYL_CHLORIDE",
+            "Plastic2": "G4_PLASTIC_SC_VINYLTOLUENE",
+            "BlackTapeAfterPl2": "G4_POLYVINYL_CHLORIDE",
+            "WindowCebr": "G4_Al",
+            "ReflCebr": "G4_TEFLON",
+            "Cebr": "CeBr3",
+        }
+    )
 
     # volume types
     type_vols: dict = {
         NAME_WORLD: TYPE_BOX,
-        "Target": TYPE_BOX,
-        "BlackTapeBeforePl1": TYPE_BOX,
-        "Plastic1": TYPE_BOX,
-        "BlackTapeAfterPl1": TYPE_BOX,
-        "BlackTapeBeforePl2": TYPE_BOX,
-        "Plastic2": TYPE_BOX,
-        "BlackTapeAfterPl2": TYPE_BOX,
-        "WindowCebr": TYPE_TUBS,
-        "ReflCebr": TYPE_TUBS,
-        "Cebr": TYPE_TUBS,
     }
+    if has_target:
+        type_vols.update({"Target": TYPE_BOX})
+    type_vols.update(
+        {
+            "BlackTapeBeforePl1": TYPE_BOX,
+            "Plastic1": TYPE_BOX,
+            "BlackTapeAfterPl1": TYPE_BOX,
+            "BlackTapeBeforePl2": TYPE_BOX,
+            "Plastic2": TYPE_BOX,
+            "BlackTapeAfterPl2": TYPE_BOX,
+            "WindowCebr": TYPE_TUBS,
+            "ReflCebr": TYPE_TUBS,
+            "Cebr": TYPE_TUBS,
+        }
+    )
 
     vols: dict = {}
 
@@ -492,7 +579,13 @@ def main(name_config_file: str, debug: bool) -> None:
     sim.physics_manager.physics_list_name = physics_list
 
     # source
-    set_source(sim, config_source, dist_source_target, nthreads)
+    if has_target:
+        set_source(sim, config_source, dist_source_target, nthreads)
+    else:
+        dist_source_pl1: float | None = config["distances"]["source_plastic1"]
+        if dist_source_pl1 is None:
+            Logger("'source_plastic1' distance must be not null if no target!", "FATAL")
+        set_source(sim, config_source, dist_source_pl1, nthreads)
 
     # actors
     set_actors(sim, name_ofile)

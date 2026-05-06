@@ -359,8 +359,8 @@ def main(name_config_file: str, debug: bool) -> None:
             "BlackTapeBeforePl2": [6 * CM, 6 * CM, 0.2 * MM],
             "Plastic2": [6 * CM, 6 * CM, 4 * MM],
             "BlackTapeAfterPl2": [6 * CM, 6 * CM, 0.2 * MM],
-            "WindowCebr": [0, 51 * MM, 53.8 * MM],  # Dmin, Dmax, H for Tubs
-            "ReflCebr": [0, 50.8 * MM, 53 * MM],  # Dmin, Dmax, H for Tubs
+            "WindowCebr": [0, 51 * MM, 52.4 * MM],  # Dmin, Dmax, H for Tubs
+            "ReflCebr": [0, 50.8 * MM, 52 * MM],  # Dmin, Dmax, H for Tubs
             "Cebr": [0, 50.6 * MM, 51 * MM],  # Dmin, Dmax, H for Tubs
         }
     )
@@ -548,7 +548,7 @@ def main(name_config_file: str, debug: bool) -> None:
             vols[key] = sim.add_volume("TubsVolume", name=name)
             vols[key].rmin = size[IDX] / 2.0
             vols[key].rmax = size[IDY] / 2.0
-            vols[key].dz = size[2] / 2.0
+            vols[key].dz = size[IDZ] / 2.0
             vols[key].sphi = 0
             vols[key].dphi = 360 * DEG
 

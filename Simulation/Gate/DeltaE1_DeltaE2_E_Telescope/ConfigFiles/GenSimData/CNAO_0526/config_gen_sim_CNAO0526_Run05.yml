@@ -1,0 +1,36 @@
+visu:
+  activate: False
+  type: qt
+
+multithreading:
+  nthreads: 4  # MT activated if not null
+
+physics_list: QGSP_INCLXX_HP
+
+source:
+  particle: proton  # possibilities: proton, helium, lithium, bore, carbon
+  energy_spectrum:  # type "gauss"
+    mean: 120.34 # in MeV/u
+    sigma: 0 # in MeV
+  n: 1000000
+
+target:
+  exists: False # False if no target (e.g. calibration run)
+  material: PMMA
+  size: [10, 10, 0.3] # in cm
+
+distances:  # these are edge-to-edge distances!
+  # source_target: 20  # in cm
+  # target_plastic1: 126.5  # in cm
+  source_plastic1: 74 # in cm; null if there is a target
+  plastic1_plastic2: 3.3  # in cm
+  plastic2_cebr: 6.7 # in cm
+
+telescope:
+  angle: null  # in degrees; possibilities: any float, null for angle of 0°
+
+campaign: CNAO_0526
+run: "05"
+
+output:
+  dir: /work/desis/CLINM/Simulation/SimResultsRaw/CNAO_0526

@@ -1,0 +1,49 @@
+input:
+  file: [
+    # /Users/abigot/CLINM/Data/CNAO_0925/CNAO_0925_Run04_carbon_on_PMMA_MC.root
+    /work/desis/CLINM/Simulation/SimResultsRaw/CNAO_0925/CNAO_0925_Run04_carbon_on_PMMA_MC_01.root,
+    /work/desis/CLINM/Simulation/SimResultsRaw/CNAO_0925/CNAO_0925_Run04_carbon_on_PMMA_MC_02.root,
+    /work/desis/CLINM/Simulation/SimResultsRaw/CNAO_0925/CNAO_0925_Run04_carbon_on_PMMA_MC_03.root,
+    /work/desis/CLINM/Simulation/SimResultsRaw/CNAO_0925/CNAO_0925_Run04_carbon_on_PMMA_MC_04.root,
+    /work/desis/CLINM/Simulation/SimResultsRaw/CNAO_0925/CNAO_0925_Run04_carbon_on_PMMA_MC_05.root,
+    /work/desis/CLINM/Simulation/SimResultsRaw/CNAO_0925/CNAO_0925_Run04_carbon_on_PMMA_MC_06.root,
+    /work/desis/CLINM/Simulation/SimResultsRaw/CNAO_0925/CNAO_0925_Run04_carbon_on_PMMA_MC_07.root,
+    /work/desis/CLINM/Simulation/SimResultsRaw/CNAO_0925/CNAO_0925_Run04_carbon_on_PMMA_MC_08.root,
+    /work/desis/CLINM/Simulation/SimResultsRaw/CNAO_0925/CNAO_0925_Run04_carbon_on_PMMA_MC_09.root,
+    /work/desis/CLINM/Simulation/SimResultsRaw/CNAO_0925/CNAO_0925_Run04_carbon_on_PMMA_MC_10.root
+  ]
+  tree:
+    names: [
+      HitsAdderPlastic1,
+      HitsAdderPlastic2,
+      HitsAdderCebr
+    ]
+    branches: [
+      TotalEnergyDeposit,
+      RunID,
+      EventID,
+      PDGCode
+    ]
+
+merge:
+  on_branches: ["EventID", "RunID"] # name of branches to use when merging data frames
+  suffixes: ["Plastic1", "Plastic2", "Cebr"] # suffix for new columns after merge
+  thresholds: [0.5, 0.5, 0.5]  # threshold values on TotalEnergyDeposit
+
+output:
+  file: [
+    # /Users/abigot/CLINM-AF/Simulation/Gate/SimResultsPostProd/CNAO_0925/TEST_CNAO0925_Run04_MC.root
+    /work/desis/CLINM/Simulation/SimResultsPostProd/CNAO_0925/Run04/CNAO0925_Run04_MC_01.root,
+    /work/desis/CLINM/Simulation/SimResultsPostProd/CNAO_0925/Run04/CNAO0925_Run04_MC_02.root,
+    /work/desis/CLINM/Simulation/SimResultsPostProd/CNAO_0925/Run04/CNAO0925_Run04_MC_03.root,
+    /work/desis/CLINM/Simulation/SimResultsPostProd/CNAO_0925/Run04/CNAO0925_Run04_MC_04.root,
+    /work/desis/CLINM/Simulation/SimResultsPostProd/CNAO_0925/Run04/CNAO0925_Run04_MC_05.root,
+    /work/desis/CLINM/Simulation/SimResultsPostProd/CNAO_0925/Run04/CNAO0925_Run04_MC_06.root,
+    /work/desis/CLINM/Simulation/SimResultsPostProd/CNAO_0925/Run04/CNAO0925_Run04_MC_07.root,
+    /work/desis/CLINM/Simulation/SimResultsPostProd/CNAO_0925/Run04/CNAO0925_Run04_MC_08.root,
+    /work/desis/CLINM/Simulation/SimResultsPostProd/CNAO_0925/Run04/CNAO0925_Run04_MC_09.root,
+    /work/desis/CLINM/Simulation/SimResultsPostProd/CNAO_0925/Run04/CNAO0925_Run04_MC_10.root
+  ]
+  tree:
+    name: treeMC
+  branch_of_interest: TotalEnergyDeposit

@@ -244,7 +244,7 @@ def set_actors(sim: gate.Simulation, name_ofile: str):
 
 
 # pylint:disable=too-many-locals,too-many-statements, too-many-branches
-def main(name_config_file: str, debug: bool) -> None:
+def main(name_config_file: str, id_file: str, debug: bool) -> None:
     """
     Main function
 
@@ -252,6 +252,9 @@ def main(name_config_file: str, debug: bool) -> None:
     ------------------------------------------------
     - name_config_file: str
         Name of the YAML config file
+
+    - id_file: str
+        ID of output file (if parallel computing)
 
     - debug: bool
         Switch for debugging
@@ -296,9 +299,17 @@ def main(name_config_file: str, debug: bool) -> None:
     run = config["run"]
     # output
     dir_output: str = config["output"]["dir"]
-    name_ofile = f"{campaign}_Run{run}_{config_source['particle']}_wo_target_MC.root"
+    name_ofile = f"{campaign}_Run{run}_{config_source['particle']}_wo_target_MC"
     if has_target:
-        name_ofile = f"{campaign}_Run{run}_{config_source['particle']}_on_{material_target}_MC.root"
+        name_ofile = (
+            f"{campaign}_Run{run}_{config_source['particle']}_on_{material_target}_MC"
+        )
+
+    # add possibility to add ID to a file (to run several jobs in parallel)
+    if id_file != "00":
+        name_ofile += f"_{id_file}"
+
+    name_ofile += ".root"
 
     # create simulation object
     sim: gate.Simulation = gate.Simulation()
@@ -589,5 +600,8 @@ if __name__ == "__main__":
     DEBUG: bool = False
     parser = ArgumentParser(description="Arguments")
     parser.add_argument("name_config_file", metavar="text", default="config.yaml")
+    parser.add_argument(
+        "--id_file", "-id", type=str, default="00", help="ID of output file"
+    )
     args = parser.parse_args()
-    main(args.name_config_file, DEBUG)
+    main(args.name_config_file, args.id_file, DEBUG)

@@ -1,5 +1,5 @@
 visu:
-  activate: True
+  activate: False
   type: qt
 
 multithreading:
@@ -33,4 +33,4 @@ campaign: Test
 run: "Test"
 
 output:
-  dir: ./SimResultsRaw
+  dir: ./Test

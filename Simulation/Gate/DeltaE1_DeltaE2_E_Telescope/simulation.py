@@ -203,6 +203,7 @@ def set_actors(sim: gate.Simulation, name_ofile: str):
         "GlobalTime",
         "ParticleName",
         "PDGCode",
+        "ParentID"
     ]
 
     digi_adder_policy: str = "EnergyWeightedCentroidPosition"

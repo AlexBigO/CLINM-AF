@@ -32,7 +32,7 @@ try:
 except ModuleNotFoundError:
     print("Module 'opengate' is not installed. Please install it to run this script.")
 
-from geometry import build_tank, build_rack, TRANSPARENT
+from geometry import build_rack
 
 
 # units
@@ -61,6 +61,7 @@ GREEN = [0, 1, 0, 1]
 BLUE = [0, 0, 1, 1]
 CYAN = [0, 1, 1, 1]
 YELLOW = [1, 1, 0, 1]
+TRANSPARENT = [1, 1, 1, 0]
 
 # dimensions of a tank
 WIDTH_TANK = 1 * MM
@@ -151,14 +152,19 @@ def main_nominal(debug: bool) -> None:
     if debug:
         print("DEBUG mode enabled!")
 
-    vis = g4.G4VisAttributes()
-    vis.SetColor(*BLUE)
-    vis.SetVisibility(1)
+    batch_mode: bool = True
 
-    dir_output: str = "Visual"
+    # vis = g4.G4VisAttributes()
+    # vis.SetColor(*BLUE)
+    # vis.SetVisibility(1)
+
+    dir_output: str = "TestGeometry"
     dist_source_target: float = 30 * CM
     energy_beam = 398.8 * MEV  # in MeV/u
-    n_source: int = 10  # int(1.e+1)
+    n_source: int = int(1e+6)
+
+    if not batch_mode:
+        n_source = 10
 
     # create simulation object
     sim: gate.Simulation = gate.Simulation()
@@ -171,14 +177,14 @@ def main_nominal(debug: bool) -> None:
     # sim.running_verbose_level = gate.logger.RUN
     sim.g4_verbose = False
     sim.g4_verbose_level = 0  # 1
-    sim.visu = True
+    sim.visu = not batch_mode
     sim.visu_type = "qt"  # vrml
     sim.random_engine = "MersenneTwister"
     sim.random_seed = "auto"
     sim.output_dir = dir_output
 
     ui = sim.user_info
-    ui.number_of_threads = 1
+    ui.number_of_threads = 4
 
     # volumes
     world = sim.world
@@ -191,19 +197,8 @@ def main_nominal(debug: bool) -> None:
     target.translation = [0, 0, -0.5 * target.size[IDZ]]
     target.material = "RW3"
     target.color = [1, 1, 1, 0.2]
-    # target.style = "solid"
-    # target.g4_vis_attributes(vis)
 
-    # sphere = gate.geometry.volumes.SphereVolume(name="sph")
-    # sphere.rmax = 100.0              # mm
-    # sphere.material = "G4_AIR"        # material is irrelevant for the Boolean geometry
-    # sphere.translation = target.translation.copy()
-
-    # final_vol = gate.geometry.volumes.subtract_volumes(target, sphere)
-
-    # sim.add_volume(final_vol)
-
-    pos_base_rack = [0, -5.5 * MM, 30 * CM]
+    pos_base_rack = [0, -5.5 * MM, 30 * CM]  # [0, 20 * MM, 30 * CM]
     water_inside_tanks = build_rack(sim, pos_base_rack)
 
     # actors
@@ -230,10 +225,10 @@ def main_nominal(debug: bool) -> None:
     # physics list
     sim.physics_manager.physics_list_name = "QGSP_INCLXX_HP"
 
-    sim.g4_commands_after_init.append("/vis/geometry/set/forceSolid all")
+    if not batch_mode:
+        sim.g4_commands_after_init.append("/vis/geometry/set/forceSolid all")
     # run simulation
     sim.run()
-
 
 
 if __name__ == "__main__":

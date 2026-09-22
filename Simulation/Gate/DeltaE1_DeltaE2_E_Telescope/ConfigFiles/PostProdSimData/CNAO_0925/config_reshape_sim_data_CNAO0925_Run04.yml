@@ -22,7 +22,8 @@ input:
       TotalEnergyDeposit,
       RunID,
       EventID,
-      PDGCode
+      PDGCode,
+      ParentID
     ]
 
 merge:

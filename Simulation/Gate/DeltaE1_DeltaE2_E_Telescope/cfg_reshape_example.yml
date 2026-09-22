@@ -1,0 +1,30 @@
+input:
+  file: [
+    /Users/abigot/CLINM-AF/Simulation/Gate/DeltaE1_DeltaE2_E_Telescope/Test/Test_RunTest_carbon_on_PMMA_MC.root
+  ]
+  tree:
+    names: [
+      HitsAdderPlastic1,
+      HitsAdderPlastic2,
+      HitsAdderCebr
+    ]
+    branches: [
+      TotalEnergyDeposit,
+      RunID,
+      EventID,
+      PDGCode,
+      ParentID
+    ]
+
+merge:
+  on_branches: ["EventID", "RunID"] # name of branches to use when merging data frames
+  suffixes: ["Plastic1", "Plastic2", "Cebr"] # suffix for new columns after merge
+  thresholds: [0.5, 0.5, 0.5]  # threshold values on TotalEnergyDeposit
+
+output:
+  file: [
+    /Users/abigot/CLINM-AF/Simulation/Gate/DeltaE1_DeltaE2_E_Telescope/Test/Test_RunTest_carbon_on_PMMA_MC_PostProd.root
+  ]
+  tree:
+    name: treeMC
+  branch_of_interest: TotalEnergyDeposit

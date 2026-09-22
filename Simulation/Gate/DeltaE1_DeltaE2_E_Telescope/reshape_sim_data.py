@@ -44,30 +44,29 @@ def is_proton(series):
     numeric = pd.to_numeric(series, errors="coerce")
     return numeric == PDG_CODE_PROTON
 
-def filter_by_Z(df, Z_target, pdg_columns=None):
-    if pdg_columns is None:
-        pdg_columns = [c for c in df.columns if c.startswith("PDGCode")]
+def filter_by_Z(df, Z_target):
+    """
+    ...
+    """
 
-    per_column_masks = []
-    for col in pdg_columns:
-        # a) Extract Z for the standard 100ZZZAAA0 format
+    col = "PDGCodePlastic1"
+    # extract Z for the standard 100ZZZAAA0 format
+    if Z_target == 1:
+        col_mask = is_proton(df[col])
+    else:
         Z_series = pdg_to_Z(df[col])
+        col_mask = (Z_series == Z_target)
+    # proton_mask = is_proton(df[col]) if Z_target == 1 else pd.Series(False, index=df.index)
+    # col_mask = (Z_series == Z_target) | proton_mask
+    # final_mask = combined.all(axis=1)
+    return df[col_mask].copy()
 
-        # b) Proton special case (only relevant when Z_target == 1)
-        proton_mask = is_proton(df[col]) if Z_target == 1 else pd.Series(False, index=df.index)
 
-        # c) Combine the two possibilities for THIS column:
-        #    - Z matches target, OR
-        #    - it's a proton (PDG==2212) when target Z == 1
-        col_mask = (Z_series == Z_target) | proton_mask
-        per_column_masks.append(col_mask)
+def get_z_from_pdgcode(pdgcode):
+    if pdgcode == PDG_CODE_PROTON:
+        return 1
+    return (pdgcode.abs() // 10000) % 1000
 
-    # --------------------------------------------------------------
-    # 3) Combine masks across columns (OR or AND)
-    # --------------------------------------------------------------
-    combined = pd.concat(per_column_masks, axis=1)
-    final_mask = combined.all(axis=1)   # keep only if ALL columns match
-    return df[final_mask].copy()
 
 def reshape_sim_data(z: int, name_config_file: str, debug: bool) -> None:
     """
@@ -120,6 +119,8 @@ def reshape_sim_data(z: int, name_config_file: str, debug: bool) -> None:
                 if name_branch in refs_for_merge:
                     continue
                 new_names[name_branch] = name_branch + suffix
+            if debug:
+                print(f"new names: {new_names}")
             dfs[-1].rename(columns=new_names, inplace=True)
 
         # merge dataframes per Run and per Event
@@ -130,8 +131,7 @@ def reshape_sim_data(z: int, name_config_file: str, debug: bool) -> None:
                 df_merged = pd.merge(dfs[0], dfs[1], on=refs_for_merge)
                 dfs.pop(0)
                 dfs[0] = df_merged
-                # print(dfs)
-                # print("\n")
+
         elif ndfs == 2:
             df_merged = pd.merge(*dfs, on=refs_for_merge)
 
@@ -149,6 +149,8 @@ def reshape_sim_data(z: int, name_config_file: str, debug: bool) -> None:
             elif branch_of_interest in name:
                 cols_to_keep.append(name)
             elif "PDGCode" in name:
+                cols_to_keep.append(name)
+            elif "ParentID" in name:
                 cols_to_keep.append(name)
 
         df: pd.DataFrame = df_merged[cols_to_keep].copy()
@@ -174,7 +176,7 @@ def reshape_sim_data(z: int, name_config_file: str, debug: bool) -> None:
             print(f"Size of df: {len(df)}\nSize of df_coinc: {len(df_coinc)}")
 
         with uproot.recreate(name_ofile) as f:
-            f.mktree(name_otree, {col: df_coinc[col].to_numpy() for col in df.columns})
+            f.mktree(name_otree, {col: df_coinc[col].to_numpy() for col in df_coinc.columns})
 
 
 def main(name_config_file: str, debug: bool) -> None:
@@ -192,6 +194,7 @@ def main(name_config_file: str, debug: bool) -> None:
 
     # store all information
     reshape_sim_data(None, name_config_file, debug)
+
     # store information Z-wise
     z_values = [1, 2, 3, 4, 5, 6]
     for z in z_values:

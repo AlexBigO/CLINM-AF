@@ -1,0 +1,10 @@
+/run/numberOfThreads 4
+
+/run/initialize
+
+/gun/particle ion
+/gun/ion 6 12 6 0
+/gun/energy 4785.6 MeV
+
+
+/run/beamOn 10
